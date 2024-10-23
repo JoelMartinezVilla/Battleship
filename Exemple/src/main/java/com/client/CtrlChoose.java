@@ -1,5 +1,6 @@
 package com.client;
 
+
 import java.net.URL;
 import java.util.HashMap;
 import java.util.Map;
@@ -14,7 +15,7 @@ import javafx.scene.canvas.GraphicsContext;
 import javafx.scene.input.MouseEvent;
 import javafx.scene.paint.Color;
 
-public class CtrlPlay implements Initializable {
+public class CtrlChoose implements Initializable {
 
     @FXML
     private Canvas canvas;
@@ -24,7 +25,6 @@ public class CtrlPlay implements Initializable {
     private PlayTimer animationTimer;
     private PlayGrid grid;
 
-    public Map<String, JSONObject> clientMousePositions = new HashMap<>();
     private Boolean mouseDragging = false;
     private double mouseOffsetX, mouseOffsetY;
 
@@ -41,7 +41,6 @@ public class CtrlPlay implements Initializable {
         UtilsViews.parentContainer.heightProperty().addListener((observable, oldValue, newvalue) -> { onSizeChanged(); });
         UtilsViews.parentContainer.widthProperty().addListener((observable, oldValue, newvalue) -> { onSizeChanged(); });
         
-        canvas.setOnMouseMoved(this::setOnMouseMoved);
         canvas.setOnMousePressed(this::onMousePressed);
         canvas.setOnMouseDragged(this::onMouseDragged);
         canvas.setOnMouseReleased(this::onMouseReleased);
@@ -73,30 +72,7 @@ public class CtrlPlay implements Initializable {
         animationTimer.stop();
     }
 
-    private void setOnMouseMoved(MouseEvent event) {
-        double mouseX = event.getX();
-        double mouseY = event.getY();
-
-        JSONObject newPosition = new JSONObject();
-        newPosition.put("x", mouseX);
-        newPosition.put("y", mouseY);
-        if (grid.isPositionInsideGrid(mouseX, mouseY)) {                
-            newPosition.put("col", grid.getCol(mouseX));
-            newPosition.put("row", grid.getRow(mouseY));
-        } else {
-            newPosition.put("col", -1);
-            newPosition.put("row", -1);
-        }
-        clientMousePositions.put(Main.userId, newPosition);
-
-        JSONObject msgObj = clientMousePositions.get(Main.userId);
-        msgObj.put("type", "clientMouseMoving");
-        msgObj.put("clientId", Main.userId);
     
-        if (Main.wsClient != null) {
-            Main.wsClient.safeSend(msgObj.toString());
-        }
-    }
 
     private void onMousePressed(MouseEvent event) {
 
@@ -107,7 +83,7 @@ public class CtrlPlay implements Initializable {
         mouseDragging = false;
 
         for (String objectId : selectableObjects.keySet()) {
-            JSONObject obj = selectableObjects.get(objectId);
+            JSONObject obj = selectableObjects[userId].get(objectId);
             int objX = obj.getInt("x");
             int objY = obj.getInt("y");
             int cols = obj.getInt("cols");
@@ -124,56 +100,44 @@ public class CtrlPlay implements Initializable {
     }
 
     private void onMouseDragged(MouseEvent event) {
+        System.out.println(event);
         if (mouseDragging) {
-            JSONObject[] obj = selectableObjects.get(Main.userId);
-            for (JSONObject jsonObject : obj) {
-                if(jsonObject.get("objectId").equals(selectedObject)){
-                    double objX = event.getX() - mouseOffsetX;
-                    double objY = event.getY() - mouseOffsetY;
-                    
-                    jsonObject.put("x", objX);
-                    jsonObject.put("y", objY);
-                    jsonObject.put("col", grid.getCol(objX));
-                    jsonObject.put("row", grid.getRow(objY));
-                    jsonObject.put("type", "clientSelectableObjectMoving");
-                    // Añadir el identificador dentro del objeto para que pueda filtar en el server
-                    jsonObject.put("objectId", selectedObject);
-                    
-                    selectableObjects.put(Main.userId, obj);
-                    if (Main.wsClient != null) {
-                        Main.wsClient.safeSend(jsonObject.toString());
-                    }
-                    setOnMouseMoved(event);
-                }
+            JSONObject obj = selectableObjects.get(selectedObject);
+            double objX = event.getX() - mouseOffsetX;
+            double objY = event.getY() - mouseOffsetY;
+            
+            obj.put("x", objX);
+            obj.put("y", objY);
+            obj.put("col", grid.getCol(objX));
+            obj.put("row", grid.getRow(objY));
+
+            JSONObject msgObj = selectableObjects.get(selectedObject);
+            msgObj.put("type", "clientSelectableObjectMoving");
+            msgObj.put("objectId", obj.getString("objectId"));
+        
+            if (Main.wsClient != null) {
+                Main.wsClient.safeSend(msgObj.toString());
             }
-            
-            
         }
-            
     }
 
     private void onMouseReleased(MouseEvent event) {
         if (selectedObject != "") {
-            JSONObject[] obj = selectableObjects.get(Main.userId);
-            for (JSONObject jsonObject : obj) {
-                if(jsonObject.get("objectId").equals(selectedObject)){
-           
-                    int objCol = jsonObject.getInt("col");
-                    int objRow = jsonObject.getInt("row");
+            JSONObject obj = selectableObjects.get(selectedObject);
+            int objCol = obj.getInt("col");
+            int objRow = obj.getInt("row");
 
-                    if (objCol != -1 && objRow != -1) {
-                        jsonObject.put("x", grid.getCellX(objCol));
-                        jsonObject.put("y", grid.getCellY(objRow));
-                    }
+            if (objCol != -1 && objRow != -1) {
+                obj.put("x", grid.getCellX(objCol));
+                obj.put("y", grid.getCellY(objRow));
+            }
 
-                    
-                    jsonObject.put("type", "clientSelectableObjectMoving");
-                    jsonObject.put("objectId", jsonObject.getString("objectId"));
-                
-                    if (Main.wsClient != null) {
-                        Main.wsClient.safeSend(jsonObject.toString());
-                    }
-                }
+            JSONObject msgObj = selectableObjects.get(selectedObject);
+            msgObj.put("type", "clientSelectableObjectMoving");
+            msgObj.put("objectId", obj.getString("objectId"));
+        
+            if (Main.wsClient != null) {
+                Main.wsClient.safeSend(msgObj.toString());
             }
 
             mouseDragging = false;
@@ -181,13 +145,6 @@ public class CtrlPlay implements Initializable {
         }
     }
 
-    public void setPlayersMousePositions(JSONObject positions) {
-        clientMousePositions.clear();
-        for (String clientId : positions.keySet()) {
-            JSONObject positionObject = positions.getJSONObject(clientId);
-            clientMousePositions.put(clientId, positionObject);
-        }
-    }
 
     public void setSelectableObjects(JSONObject objects) {
         selectableObjects.clear();
@@ -225,25 +182,7 @@ public class CtrlPlay implements Initializable {
         // Clean drawing area
         gc.clearRect(0, 0, canvas.getWidth(), canvas.getHeight());
 
-        // Draw colored 'over' cells
-
-        for (String clientId : clientMousePositions.keySet()) {
-            JSONObject position = clientMousePositions.get(clientId);
-
-            int col = position.getInt("col");
-            int row = position.getInt("row");
-
-            // Comprovar si està dins dels límits de la graella
-            if (row >= 0 && col >= 0) {
-                if ("A".equals(clientId)) {
-                    gc.setFill(Color.LIGHTBLUE); 
-                } else {
-                    gc.setFill(Color.LIGHTGREEN); 
-                }
-                // Emplenar la casella amb el color clar
-                gc.fillRect(grid.getCellX(col), grid.getCellY(row), grid.getCellSize(), grid.getCellSize());
-            }
-        }
+       
 
         // Draw grid
         drawGrid();
@@ -251,18 +190,8 @@ public class CtrlPlay implements Initializable {
         // Draw selectable objects
         for (String objectId : selectableObjects.keySet()) {
             JSONObject selectableObject = selectableObjects.get(objectId);
-            drawSelectableObject(objectId, selectableObject);
-        }
 
-        // Draw mouse circles
-        for (String clientId : clientMousePositions.keySet()) {
-            JSONObject position = clientMousePositions.get(clientId);
-            if ("A".equals(clientId)) {
-                gc.setFill(Color.BLUE);
-            } else {
-                gc.setFill(Color.GREEN); 
-            }
-            gc.fillOval(position.getInt("x") - 5, position.getInt("y") - 5, 10, 10);
+            drawSelectableObject(objectId, selectableObject);
         }
 
         // Draw FPS if needed
@@ -283,6 +212,8 @@ public class CtrlPlay implements Initializable {
     }
 
     public void drawSelectableObject(String objectId, JSONObject obj) {
+
+        // Si el id asociado al diciconario de obj  es igual a tu id de jugador, pintar ***************
         double cellSize = grid.getCellSize();
 
         int x = obj.getInt("x");
@@ -310,6 +241,7 @@ public class CtrlPlay implements Initializable {
                 break;
         }
 
+        
         // Dibuixar el rectangle
         gc.setFill(color);
         gc.fillRect(x, y, width, height);
@@ -323,3 +255,4 @@ public class CtrlPlay implements Initializable {
         gc.fillText(objectId, x + 5, y + 15);
     }
 }
+

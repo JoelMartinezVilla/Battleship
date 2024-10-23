@@ -26,14 +26,14 @@ import org.json.JSONObject;
 import org.java_websocket.exceptions.WebsocketNotConnectedException;
 
 public class Main extends WebSocketServer {
-
+    private static String userId = "";
     private static final List<String> PLAYER_NAMES = Arrays.asList("A", "B");
 
     private Map<WebSocket, String> clients;
     private List<String> availableNames;
     private Map<String, JSONObject> clientMousePositions = new HashMap<>();
 
-    private static Map<String, JSONObject> selectableObjects = new HashMap<>();
+    private static Map<String, JSONObject[]> selectableObjects = new HashMap<>();
 
     public Main(InetSocketAddress address) {
         super(address);
@@ -95,12 +95,26 @@ public class Main extends WebSocketServer {
                     break;
                 case "clientSelectableObjectMoving":
                     String objectId = obj.getString("objectId");
-                    selectableObjects.put(objectId, obj);
+
+                    JSONObject[] shipsList = selectableObjects.get(userId);
+
+                    for (int i= 0; i < shipsList.length; i++) {
+                        if(shipsList[i].get("objectId").equals(objectId)){
+                            shipsList[i].put(objectId, obj);
+                        }
+                    }
+                    
+                    // Imprimir para ver el resultado
+                    System.out.println("USER ID: "+ userId);
+                    System.out.println(selectableObjects);
+
+                    //selectableObjects.put(objectId, obj);
 
                     sendServerSelectableObjects();
                     break;
             }
         }
+    
     }
    
     private void broadcastMessage(String message, WebSocket sender) {
@@ -172,19 +186,19 @@ public class Main extends WebSocketServer {
         while (iterator.hasNext()) {
             Map.Entry<WebSocket, String> entry = iterator.next();
             WebSocket conn = entry.getKey();
-            String clientName = entry.getValue();
+            userId = entry.getValue();
 
             JSONObject rst = new JSONObject();
             rst.put("type", "clients");
-            rst.put("id", clientName);
+            rst.put("id", userId);
             rst.put("list", clientList);
 
             try {
                 conn.send(rst.toString());
             } catch (WebsocketNotConnectedException e) {
-                System.out.println("Client " + clientName + " not connected.");
+                System.out.println("Client " + userId + " not connected.");
                 iterator.remove();
-                availableNames.add(clientName);
+                availableNames.add(userId);
             } catch (Exception e) {
                 e.printStackTrace();
             }
@@ -269,6 +283,11 @@ public class Main extends WebSocketServer {
         LineReader reader = LineReaderBuilder.builder().build();
         System.out.println("Server running. Type 'exit' to gracefully stop it.");
 
+
+        // Imprimir para ver el resultado
+        System.out.println("USER ID: "+ userId);
+        System.out.println(selectableObjects);
+        JSONObject[] ships = new JSONObject[3]; //***********************************
         // Add objects
         String name0 = "O0";
         JSONObject obj0 = new JSONObject();
@@ -277,7 +296,10 @@ public class Main extends WebSocketServer {
         obj0.put("y", 50);
         obj0.put("cols", 4);
         obj0.put("rows", 1);
-        selectableObjects.put(name0, obj0);
+        //selectableObjects.put(name0, obj0);
+        String jsonString1 = "{" + "\"" + name0 + "\": " + obj0.toString() + "}";
+       
+        
 
         String name1 = "O1";
         JSONObject obj1 = new JSONObject();
@@ -286,7 +308,25 @@ public class Main extends WebSocketServer {
         obj1.put("y", 100);
         obj1.put("cols", 1);
         obj1.put("rows", 3);
-        selectableObjects.put(name1, obj1);
+        //selectableObjects.put(name1, obj1);
+        String jsonString2 = "{" + "\"" + name1 + "\": " + obj1.toString() + "}";
+
+        
+        String name2 = "O2";
+        JSONObject obj2 = new JSONObject();
+        obj2.put("objectId", name1);
+        obj2.put("x", 310);
+        obj2.put("y", 150);
+        obj2.put("cols", 2);
+        obj2.put("rows", 1);
+        String jsonString3 = "{" + "\"" + name2 + "\": " + obj2.toString() + "}";
+
+       
+        ships[0] = new JSONObject(jsonString1);
+        ships[1] = new JSONObject(jsonString2);
+        ships[2] = new JSONObject(jsonString3);
+
+        selectableObjects.put(userId, ships);
 
         try {
             while (true) {

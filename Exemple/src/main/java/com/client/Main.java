@@ -19,10 +19,11 @@ public class Main extends Application {
 
     public static UtilsWS wsClient;
 
-    public static String clientId = "";
+    public static String userId = "";
     public static CtrlConfig ctrlConfig;
     public static CtrlWait ctrlWait;
     public static CtrlPlay ctrlPlay;
+    public static CtrlChoose ctrlChoose;
 
     public static void main(String[] args) {
 
@@ -39,10 +40,12 @@ public class Main extends Application {
         UtilsViews.parentContainer.setStyle("-fx-font: 14 arial;");
         UtilsViews.addView(getClass(), "ViewConfig", "/assets/viewConfig.fxml"); 
         UtilsViews.addView(getClass(), "ViewWait", "/assets/viewWait.fxml");
+        UtilsViews.addView(getClass(), "ViewChoose", "/assets/viewChoose.fxml");
         UtilsViews.addView(getClass(), "ViewPlay", "/assets/viewPlay.fxml");
 
         ctrlConfig = (CtrlConfig) UtilsViews.getController("ViewConfig");
         ctrlWait = (CtrlWait) UtilsViews.getController("ViewWait");
+        ctrlChoose = (CtrlChoose) UtilsViews.getController("ViewChoose");
         ctrlPlay = (CtrlPlay) UtilsViews.getController("ViewPlay");
 
         Scene scene = new Scene(UtilsViews.parentContainer);
@@ -102,12 +105,12 @@ public class Main extends Application {
     }
    
     private static void wsMessage(String response) {
-         System.out.println(response);
+        System.out.println(response);
         JSONObject msgObj = new JSONObject(response);
         switch (msgObj.getString("type")) {
             case "clients":
-                if (clientId == "") {
-                    clientId = msgObj.getString("id");
+                if (userId == "") {
+                    userId = msgObj.getString("id");
                 }
                 if (UtilsViews.getActiveView() != "ViewWait") {
                     UtilsViews.setViewAnimating("ViewWait");
@@ -120,16 +123,29 @@ public class Main extends Application {
                 int value = msgObj.getInt("value");
                 String txt = String.valueOf(value);
                 if (value == 0) {
-                    UtilsViews.setViewAnimating("ViewPlay");
+                    UtilsViews.setViewAnimating("ViewChoose");
                     txt = "GO";
                 }
                 ctrlWait.txtTitle.setText(txt);
                 break;
             case "serverMouseMoving":
-                ctrlPlay.setPlayersMousePositions(msgObj.getJSONObject("positions"));
+                // *******************************
+                //if (UtilsViews.getActiveView() == "ViewChoose") {
+                   // System.out.println("Estas entrando al CHOOSEEEE");
+                    //ctrlChoose.setPlayersMousePositions(msgObj.getJSONObject("positions"));
+                //}
+                if (UtilsViews.getActiveView() == "ViewPlay") {
+                    ctrlPlay.setPlayersMousePositions(msgObj.getJSONObject("positions"));    
+                }
                 break;
             case "serverSelectableObjects":
-                ctrlPlay.setSelectableObjects(msgObj.getJSONObject("selectableObjects"));
+                
+                ctrlChoose.setSelectableObjects(msgObj.getJSONObject("selectableObjects"));
+                
+               
+                //if (UtilsViews.getActiveView().equals("ViewPlay")) {
+                //ctrlPlay.setSelectableObjects(msgObj.getJSONObject("selectableObjects"));
+                //}
                 break;
         }
     }
