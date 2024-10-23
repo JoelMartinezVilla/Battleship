@@ -38,9 +38,13 @@ public class CtrlPlay implements Initializable {
         this.gc = canvas.getGraphicsContext2D();
 
         // Set listeners
-        UtilsViews.parentContainer.heightProperty().addListener((observable, oldValue, newvalue) -> { onSizeChanged(); });
-        UtilsViews.parentContainer.widthProperty().addListener((observable, oldValue, newvalue) -> { onSizeChanged(); });
-        
+        UtilsViews.parentContainer.heightProperty().addListener((observable, oldValue, newvalue) -> {
+            onSizeChanged();
+        });
+        UtilsViews.parentContainer.widthProperty().addListener((observable, oldValue, newvalue) -> {
+            onSizeChanged();
+        });
+
         canvas.setOnMouseMoved(this::setOnMouseMoved);
         canvas.setOnMousePressed(this::onMousePressed);
         canvas.setOnMouseDragged(this::onMouseDragged);
@@ -80,7 +84,7 @@ public class CtrlPlay implements Initializable {
         JSONObject newPosition = new JSONObject();
         newPosition.put("x", mouseX);
         newPosition.put("y", mouseY);
-        if (grid.isPositionInsideGrid(mouseX, mouseY)) {                
+        if (grid.isPositionInsideGrid(mouseX, mouseY)) {
             newPosition.put("col", grid.getCol(mouseX));
             newPosition.put("row", grid.getRow(mouseY));
         } else {
@@ -92,7 +96,7 @@ public class CtrlPlay implements Initializable {
         JSONObject msgObj = clientMousePositions.get(Main.clientId);
         msgObj.put("type", "clientMouseMoving");
         msgObj.put("clientId", Main.clientId);
-    
+
         if (Main.wsClient != null) {
             Main.wsClient.safeSend(msgObj.toString());
         }
@@ -113,7 +117,7 @@ public class CtrlPlay implements Initializable {
             int cols = obj.getInt("cols");
             int rows = obj.getInt("rows");
 
-            if (isPositionInsideObject(mouseX, mouseY, objX, objY,  cols, rows)) {
+            if (isPositionInsideObject(mouseX, mouseY, objX, objY, cols, rows)) {
                 selectedObject = objectId;
                 mouseDragging = true;
                 mouseOffsetX = event.getX() - objX;
@@ -128,7 +132,7 @@ public class CtrlPlay implements Initializable {
             JSONObject obj = selectableObjects.get(selectedObject);
             double objX = event.getX() - mouseOffsetX;
             double objY = event.getY() - mouseOffsetY;
-            
+
             obj.put("x", objX);
             obj.put("y", objY);
             obj.put("col", grid.getCol(objX));
@@ -137,7 +141,7 @@ public class CtrlPlay implements Initializable {
             JSONObject msgObj = selectableObjects.get(selectedObject);
             msgObj.put("type", "clientSelectableObjectMoving");
             msgObj.put("objectId", obj.getString("objectId"));
-        
+
             if (Main.wsClient != null) {
                 Main.wsClient.safeSend(msgObj.toString());
             }
@@ -150,22 +154,21 @@ public class CtrlPlay implements Initializable {
             JSONObject obj = selectableObjects.get(selectedObject);
             int objCol = obj.getInt("col");
             int objRow = obj.getInt("row");
-
-            if (objCol != -1 && objRow != -1) {
+            if (isShipOverriding(selectedObject)) {
+                obj.put("x", obj.get("initial_x"));
+                obj.put("y", obj.get("initial_y"));
+            } else if (objCol != -1 && objRow != -1) {
                 obj.put("x", grid.getCellX(objCol));
                 obj.put("y", grid.getCellY(objRow));
-            }else if(objCol <= -1 || objRow <= -1){
+            } else if (objCol <= -1 || objRow <= -1) {
                 obj.put("x", obj.get("initial_x"));
                 obj.put("y", obj.get("initial_y"));
             }
-            // else if(){
-
-            // }
 
             JSONObject msgObj = selectableObjects.get(selectedObject);
             msgObj.put("type", "clientSelectableObjectMoving");
             msgObj.put("objectId", obj.getString("objectId"));
-        
+
             if (Main.wsClient != null) {
                 Main.wsClient.safeSend(msgObj.toString());
             }
@@ -175,18 +178,44 @@ public class CtrlPlay implements Initializable {
         }
     }
 
-    // public boolean isShipOverriding(String objectId){
-    //     JSONObject obj = selectableObjects.get(selectedObject);
-    //     int objCol = obj.getInt("col");
-    //     int objRow = obj.getInt("row");
-    //     int objCols = obj.getInt("cols");
-    //     int objRows = obj.getInt("rows");
-
-
-
-
-    //     return false;
-    // }
+    public boolean isShipOverriding(String objectId) {
+        JSONObject obj = selectableObjects.get(objectId);
+        
+        // Verificar que el objeto existe y tiene las claves necesarias
+        if (obj == null || !obj.has("col") || !obj.has("row") || !obj.has("cols") || !obj.has("rows")) {
+            System.out.println("Objeto no encontrado o faltan claves: " + objectId);
+            return false; // O lanzar una excepción, según el manejo de errores que prefieras
+        }
+    
+        int objFirstCol = obj.getInt("col");
+        int objFirstRow = obj.getInt("row");
+        int objLastCol = obj.getInt("cols") + objFirstCol - 1;  // Ajuste para la última columna
+        int objLastRow = obj.getInt("rows") + objFirstRow - 1;  // Ajuste para la última fila
+    
+        for (String otherObjectId : selectableObjects.keySet()) {
+            if (!otherObjectId.equals(objectId)) { 
+                JSONObject otherObj = selectableObjects.get(otherObjectId);
+    
+                // Verificar que el objeto existe y tiene las claves necesarias
+                if (otherObj == null || !otherObj.has("col") || !otherObj.has("row") || !otherObj.has("cols") || !otherObj.has("rows")) {
+                    continue; // Saltar objetos que no tienen la información necesaria
+                }
+    
+                int otherFirstCol = otherObj.getInt("col");
+                int otherFirstRow = otherObj.getInt("row");
+                int otherLastCol = otherObj.getInt("cols") + otherFirstCol - 1;  // Ajuste similar
+                int otherLastRow = otherObj.getInt("rows") + otherFirstRow - 1;  // Ajuste similar
+    
+                // Comprobamos si las posiciones de los barcos se solapan
+                if (objFirstCol <= otherLastCol && objLastCol >= otherFirstCol && 
+                    objFirstRow <= otherLastRow && objLastRow >= otherFirstRow) {
+                    return true;  // Hay superposición
+                }
+            }
+        }
+        return false;  // No hay superposición
+    }
+    
 
     public void setPlayersMousePositions(JSONObject positions) {
         clientMousePositions.clear();
@@ -215,13 +244,15 @@ public class CtrlPlay implements Initializable {
         double objectBottomY = objY + objectHeight;
 
         return positionX >= objectLeftX && positionX < objectRightX &&
-               positionY >= objectTopY && positionY < objectBottomY;
+                positionY >= objectTopY && positionY < objectBottomY;
     }
 
     // Run game (and animations)
     private void run(double fps) {
 
-        if (animationTimer.fps < 1) { return; }
+        if (animationTimer.fps < 1) {
+            return;
+        }
 
         // Update objects and animations here
     }
@@ -242,9 +273,9 @@ public class CtrlPlay implements Initializable {
             // Comprovar si està dins dels límits de la graella
             if (row >= 0 && col >= 0) {
                 if ("A".equals(clientId)) {
-                    gc.setFill(Color.LIGHTBLUE); 
+                    gc.setFill(Color.LIGHTBLUE);
                 } else {
-                    gc.setFill(Color.LIGHTGREEN); 
+                    gc.setFill(Color.LIGHTGREEN);
                 }
                 // Emplenar la casella amb el color clar
                 gc.fillRect(grid.getCellX(col), grid.getCellY(row), grid.getCellSize(), grid.getCellSize());
@@ -267,13 +298,15 @@ public class CtrlPlay implements Initializable {
             if ("A".equals(clientId)) {
                 gc.setFill(Color.BLUE);
             } else {
-                gc.setFill(Color.GREEN); 
+                gc.setFill(Color.GREEN);
             }
             gc.fillOval(position.getInt("x") - 5, position.getInt("y") - 5, 10, 10);
         }
 
         // Draw FPS if needed
-        if (showFPS) { animationTimer.drawFPS(gc); }   
+        if (showFPS) {
+            animationTimer.drawFPS(gc);
+        }
     }
 
     public void drawGrid() {
@@ -294,7 +327,6 @@ public class CtrlPlay implements Initializable {
 
         int x = obj.getInt("x");
         int y = obj.getInt("y");
-        System.out.println("x: "+x+"y: "+y);
         double width = obj.getInt("cols") * cellSize;
         double height = obj.getInt("rows") * cellSize;
 
