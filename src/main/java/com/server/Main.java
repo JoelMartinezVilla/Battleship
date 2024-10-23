@@ -275,6 +275,8 @@ public class Main extends WebSocketServer {
         obj0.put("objectId", name0);
         obj0.put("x", 300);
         obj0.put("y", 50);
+        obj0.put("initial_x", 300);
+        obj0.put("initial_y", 50);
         obj0.put("cols", 4);
         obj0.put("rows", 1);
         selectableObjects.put(name0, obj0);
@@ -282,11 +284,46 @@ public class Main extends WebSocketServer {
         String name1 = "O1";
         JSONObject obj1 = new JSONObject();
         obj1.put("objectId", name1);
-        obj1.put("x", 300);
-        obj1.put("y", 100);
+        obj1.put("x", 350);
+        obj1.put("y", 250);
+        obj1.put("initial_x", 350);
+        obj1.put("initial_y", 250);
         obj1.put("cols", 1);
         obj1.put("rows", 3);
         selectableObjects.put(name1, obj1);
+        
+        String name2 = "O2";
+        JSONObject obj2 = new JSONObject();
+        obj2.put("objectId", name2);
+        obj2.put("x", 300);
+        obj2.put("y", 200);
+        obj2.put("initial_x", 300);
+        obj2.put("initial_y", 200);
+        obj2.put("cols", 2);
+        obj2.put("rows", 1);
+        selectableObjects.put(name2, obj2);
+
+        String name3 = "O3";
+        JSONObject obj3 = new JSONObject();
+        obj3.put("objectId", name3);
+        obj3.put("x", 300);
+        obj3.put("y", 250);
+        obj3.put("initial_x", 300);
+        obj3.put("initial_y", 250);
+        obj3.put("cols", 1);
+        obj3.put("rows", 5);
+        selectableObjects.put(name3, obj3);
+
+        String name4 = "O4";
+        JSONObject obj4 = new JSONObject();
+        obj4.put("objectId", name4);
+        obj4.put("x", 300);
+        obj4.put("y", 150);
+        obj4.put("initial_x", 300);
+        obj4.put("initial_y", 150);
+        obj4.put("cols", 3);
+        obj4.put("rows", 1);
+        selectableObjects.put(name4, obj4);
 
         try {
             while (true) {

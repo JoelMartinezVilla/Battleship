@@ -14,7 +14,7 @@ import javafx.scene.canvas.GraphicsContext;
 import javafx.scene.input.MouseEvent;
 import javafx.scene.paint.Color;
 
-public class CtrlPlay implements Initializable {
+public class CtrlChoose implements Initializable {
 
     @FXML
     private Canvas canvas;
@@ -154,13 +154,10 @@ public class CtrlPlay implements Initializable {
             if (objCol != -1 && objRow != -1) {
                 obj.put("x", grid.getCellX(objCol));
                 obj.put("y", grid.getCellY(objRow));
-            }else if(objCol <= -1 || objRow <= -1){
+            }else if(objCol <= -1 && objRow <= -1){
                 obj.put("x", obj.get("initial_x"));
                 obj.put("y", obj.get("initial_y"));
             }
-            // else if(){
-
-            // }
 
             JSONObject msgObj = selectableObjects.get(selectedObject);
             msgObj.put("type", "clientSelectableObjectMoving");
@@ -174,19 +171,6 @@ public class CtrlPlay implements Initializable {
             selectedObject = "";
         }
     }
-
-    // public boolean isShipOverriding(String objectId){
-    //     JSONObject obj = selectableObjects.get(selectedObject);
-    //     int objCol = obj.getInt("col");
-    //     int objRow = obj.getInt("row");
-    //     int objCols = obj.getInt("cols");
-    //     int objRows = obj.getInt("rows");
-
-
-
-
-    //     return false;
-    // }
 
     public void setPlayersMousePositions(JSONObject positions) {
         clientMousePositions.clear();
@@ -294,7 +278,6 @@ public class CtrlPlay implements Initializable {
 
         int x = obj.getInt("x");
         int y = obj.getInt("y");
-        System.out.println("x: "+x+"y: "+y);
         double width = obj.getInt("cols") * cellSize;
         double height = obj.getInt("rows") * cellSize;
 

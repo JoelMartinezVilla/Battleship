@@ -54,7 +54,7 @@ if (Test-Path $JAR_PATH) {
 
 # Ejecutar el comando para compilar el proyecto
 Write-Host "Ejecutando el comando ./run.ps1 com.server.Main build..."
-Set-Location Exemple
+Set-Location Battleship
 .\run.ps1 com.server.Main build
 
 # Verificar si se generó el archivo JAR
