@@ -1,5 +1,6 @@
 package com.client;
 
+
 import java.net.URL;
 import java.util.HashMap;
 import java.util.Map;
@@ -24,7 +25,6 @@ public class CtrlChoose implements Initializable {
     private PlayTimer animationTimer;
     private PlayGrid grid;
 
-    public Map<String, JSONObject> clientMousePositions = new HashMap<>();
     private Boolean mouseDragging = false;
     private double mouseOffsetX, mouseOffsetY;
 
@@ -41,7 +41,6 @@ public class CtrlChoose implements Initializable {
         UtilsViews.parentContainer.heightProperty().addListener((observable, oldValue, newvalue) -> { onSizeChanged(); });
         UtilsViews.parentContainer.widthProperty().addListener((observable, oldValue, newvalue) -> { onSizeChanged(); });
         
-        canvas.setOnMouseMoved(this::setOnMouseMoved);
         canvas.setOnMousePressed(this::onMousePressed);
         canvas.setOnMouseDragged(this::onMouseDragged);
         canvas.setOnMouseReleased(this::onMouseReleased);
@@ -73,30 +72,7 @@ public class CtrlChoose implements Initializable {
         animationTimer.stop();
     }
 
-    private void setOnMouseMoved(MouseEvent event) {
-        double mouseX = event.getX();
-        double mouseY = event.getY();
-
-        JSONObject newPosition = new JSONObject();
-        newPosition.put("x", mouseX);
-        newPosition.put("y", mouseY);
-        if (grid.isPositionInsideGrid(mouseX, mouseY)) {                
-            newPosition.put("col", grid.getCol(mouseX));
-            newPosition.put("row", grid.getRow(mouseY));
-        } else {
-            newPosition.put("col", -1);
-            newPosition.put("row", -1);
-        }
-        clientMousePositions.put(Main.clientId, newPosition);
-
-        JSONObject msgObj = clientMousePositions.get(Main.clientId);
-        msgObj.put("type", "clientMouseMoving");
-        msgObj.put("clientId", Main.clientId);
     
-        if (Main.wsClient != null) {
-            Main.wsClient.safeSend(msgObj.toString());
-        }
-    }
 
     private void onMousePressed(MouseEvent event) {
 
@@ -124,6 +100,7 @@ public class CtrlChoose implements Initializable {
     }
 
     private void onMouseDragged(MouseEvent event) {
+        System.out.println(event);
         if (mouseDragging) {
             JSONObject obj = selectableObjects.get(selectedObject);
             double objX = event.getX() - mouseOffsetX;
@@ -142,7 +119,6 @@ public class CtrlChoose implements Initializable {
                 Main.wsClient.safeSend(msgObj.toString());
             }
         }
-        setOnMouseMoved(event);
     }
 
     private void onMouseReleased(MouseEvent event) {
@@ -154,9 +130,6 @@ public class CtrlChoose implements Initializable {
             if (objCol != -1 && objRow != -1) {
                 obj.put("x", grid.getCellX(objCol));
                 obj.put("y", grid.getCellY(objRow));
-            }else if(objCol <= -1 && objRow <= -1){
-                obj.put("x", obj.get("initial_x"));
-                obj.put("y", obj.get("initial_y"));
             }
 
             JSONObject msgObj = selectableObjects.get(selectedObject);
@@ -172,13 +145,6 @@ public class CtrlChoose implements Initializable {
         }
     }
 
-    public void setPlayersMousePositions(JSONObject positions) {
-        clientMousePositions.clear();
-        for (String clientId : positions.keySet()) {
-            JSONObject positionObject = positions.getJSONObject(clientId);
-            clientMousePositions.put(clientId, positionObject);
-        }
-    }
 
     public void setSelectableObjects(JSONObject objects) {
         selectableObjects.clear();
@@ -216,24 +182,7 @@ public class CtrlChoose implements Initializable {
         // Clean drawing area
         gc.clearRect(0, 0, canvas.getWidth(), canvas.getHeight());
 
-        // Draw colored 'over' cells
-        for (String clientId : clientMousePositions.keySet()) {
-            JSONObject position = clientMousePositions.get(clientId);
-
-            int col = position.getInt("col");
-            int row = position.getInt("row");
-
-            // Comprovar si està dins dels límits de la graella
-            if (row >= 0 && col >= 0) {
-                if ("A".equals(clientId)) {
-                    gc.setFill(Color.LIGHTBLUE); 
-                } else {
-                    gc.setFill(Color.LIGHTGREEN); 
-                }
-                // Emplenar la casella amb el color clar
-                gc.fillRect(grid.getCellX(col), grid.getCellY(row), grid.getCellSize(), grid.getCellSize());
-            }
-        }
+       
 
         // Draw grid
         drawGrid();
@@ -241,19 +190,8 @@ public class CtrlChoose implements Initializable {
         // Draw selectable objects
         for (String objectId : selectableObjects.keySet()) {
             JSONObject selectableObject = selectableObjects.get(objectId);
-            boolean override = false;
-            drawSelectableObject(objectId, selectableObject, override);
-        }
 
-        // Draw mouse circles
-        for (String clientId : clientMousePositions.keySet()) {
-            JSONObject position = clientMousePositions.get(clientId);
-            if ("A".equals(clientId)) {
-                gc.setFill(Color.BLUE);
-            } else {
-                gc.setFill(Color.GREEN); 
-            }
-            gc.fillOval(position.getInt("x") - 5, position.getInt("y") - 5, 10, 10);
+            drawSelectableObject(objectId, selectableObject);
         }
 
         // Draw FPS if needed
@@ -273,7 +211,9 @@ public class CtrlChoose implements Initializable {
         }
     }
 
-    public void drawSelectableObject(String objectId, JSONObject obj, boolean override) {
+    public void drawSelectableObject(String objectId, JSONObject obj) {
+
+        // Si el id asociado al diciconario de obj  es igual a tu id de jugador, pintar ***************
         double cellSize = grid.getCellSize();
 
         int x = obj.getInt("x");
@@ -301,6 +241,7 @@ public class CtrlChoose implements Initializable {
                 break;
         }
 
+        
         // Dibuixar el rectangle
         gc.setFill(color);
         gc.fillRect(x, y, width, height);

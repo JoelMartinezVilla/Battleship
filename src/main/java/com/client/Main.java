@@ -23,6 +23,7 @@ public class Main extends Application {
     public static CtrlConfig ctrlConfig;
     public static CtrlWait ctrlWait;
     public static CtrlPlay ctrlPlay;
+    public static CtrlPlay ctrlChoose;
 
     public static void main(String[] args) {
 
@@ -40,10 +41,12 @@ public class Main extends Application {
         UtilsViews.addView(getClass(), "ViewConfig", "/assets/viewConfig.fxml"); 
         UtilsViews.addView(getClass(), "ViewWait", "/assets/viewWait.fxml");
         UtilsViews.addView(getClass(), "ViewPlay", "/assets/viewPlay.fxml");
+        UtilsViews.addView(getClass(), "ViewChoose", "/assets/viewChoose.fxml");
 
         ctrlConfig = (CtrlConfig) UtilsViews.getController("ViewConfig");
         ctrlWait = (CtrlWait) UtilsViews.getController("ViewWait");
         ctrlPlay = (CtrlPlay) UtilsViews.getController("ViewPlay");
+        ctrlChoose = (CtrlPlay) UtilsViews.getController("ViewChoose");
 
         Scene scene = new Scene(UtilsViews.parentContainer);
         
@@ -120,7 +123,7 @@ public class Main extends Application {
                 int value = msgObj.getInt("value");
                 String txt = String.valueOf(value);
                 if (value == 0) {
-                    UtilsViews.setViewAnimating("ViewPlay");
+                    UtilsViews.setViewAnimating("ViewChoose");
                     txt = "GO";
                 }
                 ctrlWait.txtTitle.setText(txt);
