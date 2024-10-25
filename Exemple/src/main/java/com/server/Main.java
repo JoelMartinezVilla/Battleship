@@ -33,7 +33,7 @@ public class Main extends WebSocketServer {
     private List<String> availableNames;
     private Map<String, JSONObject> clientMousePositions = new HashMap<>();
 
-    private static Map<String, JSONObject[]> selectableObjects = new HashMap<>();
+    private static Map<String, Map<String, JSONObject>> selectableObjects = new HashMap<>();
 
     public Main(InetSocketAddress address) {
         super(address);
@@ -74,49 +74,39 @@ public class Main extends WebSocketServer {
     @Override
     public void onMessage(WebSocket conn, String message) {
         JSONObject obj = new JSONObject(message);
-    
-        
+
         if (obj.has("type")) {
             String type = obj.getString("type");
-    
+
             switch (type) {
                 case "clientMouseMoving":
-                    // Obtenim el clientId del missatge
-                    String clientId = obj.getString("clientId");   
+                    String clientId = obj.getString("clientId");
                     clientMousePositions.put(clientId, obj);
-        
-                    // Prepara el missatge de tipus 'serverMouseMoving' amb les posicions de tots els clients
+
                     JSONObject rst0 = new JSONObject();
                     rst0.put("type", "serverMouseMoving");
                     rst0.put("positions", clientMousePositions);
-        
-                    // Envia el missatge a tots els clients connectats
+
                     broadcastMessage(rst0.toString(), null);
                     break;
+
                 case "clientSelectableObjectMoving":
                     String objectId = obj.getString("objectId");
 
-                    JSONObject[] shipsList = selectableObjects.get(userId);
-
-                    for (int i= 0; i < shipsList.length; i++) {
-                        if(shipsList[i].get("objectId").equals(objectId)){
-                            shipsList[i].put(objectId, obj);
-                        }
+                    Map<String, JSONObject> shipsList = selectableObjects.get(userId);
+                    if (shipsList != null && shipsList.containsKey(objectId)) {
+                        shipsList.put(objectId, obj);
                     }
-                    
-                    // Imprimir para ver el resultado
-                    System.out.println("USER ID: "+ userId);
-                    System.out.println(selectableObjects);
 
-                    //selectableObjects.put(objectId, obj);
+                    System.out.println("USER ID: " + userId);
+                    System.out.println(selectableObjects);
 
                     sendServerSelectableObjects();
                     break;
             }
         }
-    
     }
-   
+
     private void broadcastMessage(String message, WebSocket sender) {
         for (Map.Entry<WebSocket, String> entry : clients.entrySet()) {
             WebSocket conn = entry.getKey();
@@ -131,48 +121,6 @@ public class Main extends WebSocketServer {
                     e.printStackTrace();
                 }
             }
-        }
-    }
-
-    private void sendPrivateMessage(String destination, String message, WebSocket senderConn) {
-        boolean found = false;
-
-        for (Map.Entry<WebSocket, String> entry : clients.entrySet()) {
-            if (entry.getValue().equals(destination)) {
-                found = true;
-                try {
-                    entry.getKey().send(message);
-                    JSONObject confirmation = new JSONObject();
-                    confirmation.put("type", "confirmation");
-                    confirmation.put("message", "Message sent to " + destination);
-                    senderConn.send(confirmation.toString());
-                } catch (WebsocketNotConnectedException e) {
-                    System.out.println("Client " + destination + " not connected.");
-                    clients.remove(entry.getKey());
-                    availableNames.add(destination);
-                    notifySenderClientUnavailable(senderConn, destination);
-                } catch (Exception e) {
-                    e.printStackTrace();
-                }
-                break;
-            }
-        }
-
-        if (!found) {
-            System.out.println("Client " + destination + " not found.");
-            notifySenderClientUnavailable(senderConn, destination);
-        }
-    }
-
-    private void notifySenderClientUnavailable(WebSocket sender, String destination) {
-        JSONObject rst = new JSONObject();
-        rst.put("type", "error");
-        rst.put("message", "Client " + destination + " not available.");
-
-        try {
-            sender.send(rst.toString());
-        } catch (Exception e) {
-            e.printStackTrace();
         }
     }
 
@@ -227,16 +175,13 @@ public class Main extends WebSocketServer {
     }
 
     public void sendServerSelectableObjects() {
-
-        // Prepara el missatge de tipus 'serverObjects' amb les posicions de tots els clients
         JSONObject rst1 = new JSONObject();
         rst1.put("type", "serverSelectableObjects");
         rst1.put("selectableObjects", selectableObjects);
 
-        // Envia el missatge a tots els clients connectats
         broadcastMessage(rst1.toString(), null);
     }
-   
+
     @Override
     public void onError(WebSocket conn, Exception ex) {
         ex.printStackTrace();
@@ -272,65 +217,48 @@ public class Main extends WebSocketServer {
         return resultat.toString().trim();
     }
 
-    public static void main(String[] args) {
 
+    // Problea al capturar la id del ususario en el sendClientList, despues de necesitarla para los barcos (es " " la clientId)
+    public static void main(String[] args) {
         String systemName = askSystemName();
 
-        // WebSockets server
         Main server = new Main(new InetSocketAddress(3000));
         server.start();
-        
+
         LineReader reader = LineReaderBuilder.builder().build();
         System.out.println("Server running. Type 'exit' to gracefully stop it.");
 
-
-        // Imprimir para ver el resultado
-        System.out.println("USER ID: "+ userId);
-        System.out.println(selectableObjects);
-        JSONObject[] ships = new JSONObject[3]; //***********************************
-        // Add objects
-        String name0 = "O0";
+        Map<String, JSONObject> ships = new HashMap<>();
+        
         JSONObject obj0 = new JSONObject();
-        obj0.put("objectId", name0);
+        obj0.put("objectId", "O0");
         obj0.put("x", 300);
         obj0.put("y", 50);
         obj0.put("cols", 4);
         obj0.put("rows", 1);
-        //selectableObjects.put(name0, obj0);
-        String jsonString1 = "{" + "\"" + name0 + "\": " + obj0.toString() + "}";
-       
-        
+        ships.put("O0", obj0);
 
-        String name1 = "O1";
         JSONObject obj1 = new JSONObject();
-        obj1.put("objectId", name1);
+        obj1.put("objectId", "O1");
         obj1.put("x", 300);
         obj1.put("y", 100);
         obj1.put("cols", 1);
         obj1.put("rows", 3);
-        //selectableObjects.put(name1, obj1);
-        String jsonString2 = "{" + "\"" + name1 + "\": " + obj1.toString() + "}";
+        ships.put("O1", obj1);
 
-        
-        String name2 = "O2";
         JSONObject obj2 = new JSONObject();
-        obj2.put("objectId", name1);
+        obj2.put("objectId", "O2");
         obj2.put("x", 310);
         obj2.put("y", 150);
         obj2.put("cols", 2);
         obj2.put("rows", 1);
-        String jsonString3 = "{" + "\"" + name2 + "\": " + obj2.toString() + "}";
-
-       
-        ships[0] = new JSONObject(jsonString1);
-        ships[1] = new JSONObject(jsonString2);
-        ships[2] = new JSONObject(jsonString3);
-
+        ships.put("O2", obj2);
+        System.out.println("Server user id: " + userId);
         selectableObjects.put(userId, ships);
 
         try {
             while (true) {
-                String line = null;
+                String line;
                 try {
                     line = reader.readLine("> ");
                 } catch (UserInterruptException e) {

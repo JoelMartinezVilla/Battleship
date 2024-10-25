@@ -18,7 +18,6 @@ import javafx.util.Duration;
 public class Main extends Application {
 
     public static UtilsWS wsClient;
-
     public static String userId = "";
     public static CtrlConfig ctrlConfig;
     public static CtrlWait ctrlWait;
@@ -26,14 +25,12 @@ public class Main extends Application {
     public static CtrlChoose ctrlChoose;
 
     public static void main(String[] args) {
-
         // Iniciar app JavaFX   
         launch(args);
     }
     
     @Override
     public void start(Stage stage) throws Exception {
-
         final int windowWidth = 400;
         final int windowHeight = 300;
 
@@ -49,7 +46,6 @@ public class Main extends Application {
         ctrlPlay = (CtrlPlay) UtilsViews.getController("ViewPlay");
 
         Scene scene = new Scene(UtilsViews.parentContainer);
-        
         stage.setScene(scene);
         stage.onCloseRequestProperty(); // Call close method when closing window
         stage.setTitle("JavaFX");
@@ -88,31 +84,29 @@ public class Main extends Application {
     }
 
     public static void connectToServer() {
-
         ctrlConfig.txtMessage.setTextFill(Color.BLACK);
         ctrlConfig.txtMessage.setText("Connecting ...");
-    
-        pauseDuring(1500, () -> { // Give time to show connecting message ...
 
+        pauseDuring(1500, () -> { // Give time to show connecting message ...
             String protocol = ctrlConfig.txtProtocol.getText();
             String host = ctrlConfig.txtHost.getText();
             String port = ctrlConfig.txtPort.getText();
             wsClient = UtilsWS.getSharedInstance(protocol + "://" + host + ":" + port);
-    
+
             wsClient.onMessage((response) -> { Platform.runLater(() -> { wsMessage(response); }); });
             wsClient.onError((response) -> { Platform.runLater(() -> { wsError(response); }); });
         });
     }
-   
+
     private static void wsMessage(String response) {
-        System.out.println(response);
+        //System.out.println(response);
         JSONObject msgObj = new JSONObject(response);
         switch (msgObj.getString("type")) {
             case "clients":
-                if (userId == "") {
+                if (userId.isEmpty()) {
                     userId = msgObj.getString("id");
                 }
-                if (UtilsViews.getActiveView() != "ViewWait") {
+                if (!UtilsViews.getActiveView().equals("ViewWait")) {
                     UtilsViews.setViewAnimating("ViewWait");
                 }
                 List<String> stringList = jsonArrayToList(msgObj.getJSONArray("list"), String.class);
@@ -129,36 +123,32 @@ public class Main extends Application {
                 ctrlWait.txtTitle.setText(txt);
                 break;
             case "serverMouseMoving":
-                // *******************************
-                //if (UtilsViews.getActiveView() == "ViewChoose") {
-                   // System.out.println("Estas entrando al CHOOSEEEE");
-                    //ctrlChoose.setPlayersMousePositions(msgObj.getJSONObject("positions"));
-                //}
-                if (UtilsViews.getActiveView() == "ViewPlay") {
+                if (UtilsViews.getActiveView().equals("ViewChoose")) {
+                    ctrlChoose.setPlayersMousePositions(msgObj.getJSONObject("positions"));
+                }
+                if (UtilsViews.getActiveView().equals("ViewPlay")) {
                     ctrlPlay.setPlayersMousePositions(msgObj.getJSONObject("positions"));    
                 }
                 break;
             case "serverSelectableObjects":
-                
-                ctrlChoose.setSelectableObjects(msgObj.getJSONObject("selectableObjects"));
-                
-               
-                //if (UtilsViews.getActiveView().equals("ViewPlay")) {
-                //ctrlPlay.setSelectableObjects(msgObj.getJSONObject("selectableObjects"));
-                //}
+
+            // ViewChoose: {"":{"O0":{"x":300,"y":50,"rows":1,"cols":4,"objectId":"O0"},"O1":{"x":300,"y":100,"rows":3,"cols":1,"objectId":"O1"},"O2":{"x":310,"y":150,"rows":1,"cols":2,"objectId":"O2"}}}
+                System.out.println("ViewChoose: " + msgObj.getJSONObject("selectableObjects").toString());
+                if (UtilsViews.getActiveView().equals("ViewChoose")) {
+                    ctrlChoose.setSelectableObjects(msgObj.getJSONObject("selectableObjects"));
+                } else if (UtilsViews.getActiveView().equals("ViewPlay")) {
+                    ctrlPlay.setSelectableObjects(msgObj.getJSONObject("selectableObjects"));
+                }
                 break;
         }
     }
 
     private static void wsError(String response) {
-
         String connectionRefused = "Connection refused";
-        if (response.indexOf(connectionRefused) != -1) {
+        if (response.contains(connectionRefused)) {
             ctrlConfig.txtMessage.setTextFill(Color.RED);
             ctrlConfig.txtMessage.setText(connectionRefused);
-            pauseDuring(1500, () -> {
-                ctrlConfig.txtMessage.setText("");
-            });
+            pauseDuring(1500, () -> ctrlConfig.txtMessage.setText(""));
         }
     }
 }
