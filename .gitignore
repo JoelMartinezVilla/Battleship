@@ -1,34 +1,42 @@
-# General
+# Maven target directory
+target/
+
+# Logs
+*.log
+
+# Compiled class files
+*.class
+
+# JAR and WAR files
+*.jar
+*.war
+
+# IDE specific files
+.idea/
+*.iml
+*.hprof
+*.class
+
+# Operating system files
 .DS_Store
-.AppleDouble
-.LSOverride
+Thumbs.db
 
-# Icon must end with two \r
-Icon
+# Maven wrapper
+.mvn/wrapper/maven-wrapper.jar
+.mvn/wrapper/maven-wrapper.properties
 
-# Thumbnails
-._*
+# Local environment configurations
+*.properties
 
-# Files that might appear in the root of a volume
-.DocumentRevisions-V100
-.fseventsd
-.Spotlight-V100
-.TemporaryItems
-.Trashes
-.VolumeIcon.icns
-.com.apple.timemachine.donotpresent
+# Java artifacts
+*.class
 
-# Directories potentially created on remote AFP share
-.AppleDB
-.AppleDesktop
-Network Trash Folder
-Temporary Items
-.apdisk
-bin/*
+# Maven logs
+mvn-log.txt
 
-# Ignore release folder
-Release/
-node_modules
+# Dependency directories
+**/dependency-reduced-pom.xml
 
-target/classes
-target/maven-status
+# General
+*.swp
+*~

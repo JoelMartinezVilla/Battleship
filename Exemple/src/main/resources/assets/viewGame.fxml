@@ -13,7 +13,7 @@
    <children>
       <VBox alignment="CENTER" AnchorPane.leftAnchor="0.0" AnchorPane.rightAnchor="0.0">
          <children>
-            <Label alignment="CENTER" text="Escoge la posición de los barcos">
+            <Label alignment="CENTER" text="BATTLESHIP GAME">
                <font>
                   <Font size="36.0" />
                </font>
@@ -21,7 +21,6 @@
             <Canvas fx:id="canvas" height="25.0" width="25.0" VBox.vgrow="ALWAYS" />
          </children>
       </VBox>
-      <Button fx:id="startButton" layoutX="489.0" layoutY="421.0" mnemonicParsing="false" text="Start Game" />
    </children>
 </AnchorPane>
 
