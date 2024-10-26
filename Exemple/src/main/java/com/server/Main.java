@@ -50,10 +50,42 @@ public class Main extends WebSocketServer {
     public void onOpen(WebSocket conn, ClientHandshake handshake) {
         String clientName = getNextAvailableName();
         clients.put(conn, clientName);
+    
+       
+    
         System.out.println("WebSocket client connected: " + clientName);
         sendClientsList();
+
+         // Definir ships en base al clientId del cliente
+         Map<String, JSONObject> ships = new HashMap<>();
+         JSONObject obj0 = new JSONObject();
+         obj0.put("objectId", "O0");
+         obj0.put("x", 300);
+         obj0.put("y", 50);
+         obj0.put("cols", 4);
+         obj0.put("rows", 1);
+         ships.put("O0", obj0);
+     
+         JSONObject obj1 = new JSONObject();
+         obj1.put("objectId", "O1");
+         obj1.put("x", 300);
+         obj1.put("y", 100);
+         obj1.put("cols", 1);
+         obj1.put("rows", 3);
+         ships.put("O1", obj1);
+     
+         JSONObject obj2 = new JSONObject();
+         obj2.put("objectId", "O2");
+         obj2.put("x", 310);
+         obj2.put("y", 150);
+         obj2.put("cols", 2);
+         obj2.put("rows", 1);
+         ships.put("O2", obj2);
+     
+         selectableObjects.put(userId, ships);
         sendCowntdown();
     }
+    
 
     private String getNextAvailableName() {
         if (availableNames.isEmpty()) {
@@ -71,21 +103,21 @@ public class Main extends WebSocketServer {
         sendClientsList();
     }
 
+
+
     @Override
     public void onMessage(WebSocket conn, String message) {
         JSONObject obj = new JSONObject(message);
-    
-        
+        String userId = obj.optString("userId", ""); // Obtiene el userId del mensaje recibido
+
         if (obj.has("type")) {
             String type = obj.getString("type");
     
             switch (type) {
                 case "clientMouseMoving":
-                    // Obtenim el clientId del missatge
-                    String clientId = obj.getString("clientId");   
-                    clientMousePositions.put(clientId, obj);
-        
-                    // Prepara el missatge de tipus 'serverMouseMoving' amb les posicions de tots els clients
+                    // Guarda la posición del mouse para el usuario que envió el mensaje
+                    clientMousePositions.put(userId, obj.getJSONObject("data"));
+
                     JSONObject rst0 = new JSONObject();
                     rst0.put("type", "serverMouseMoving");
                     rst0.put("positions", clientMousePositions);
@@ -94,11 +126,22 @@ public class Main extends WebSocketServer {
                     broadcastMessage(rst0.toString(), null);
                     break;
                 case "clientSelectableObjectMoving":
-                    String objectId = obj.getString("objectId");
-                    selectableObjects.put(objectId, obj);
+                    String objectId = obj.getJSONObject("data").getString("objectId");
+
+                    Map<String, JSONObject> shipsList = selectableObjects.get(userId);
+                    if (shipsList != null && shipsList.containsKey(objectId)) {
+                        shipsList.put(objectId, obj.getJSONObject("data"));
+                    }
+
+                    System.out.println("USER ID: " + userId);
+                    System.out.println(selectableObjects);
 
                     sendServerSelectableObjects();
                     break;
+                
+                //case "chooseShips":
+                // Aqui reocjeremos el mensaje de que hay que volver a llamar al contador para escocjer los barcos
+                //break;
             }
         }
     }
@@ -268,25 +311,6 @@ public class Main extends WebSocketServer {
         
         LineReader reader = LineReaderBuilder.builder().build();
         System.out.println("Server running. Type 'exit' to gracefully stop it.");
-
-        // Add objects
-        String name0 = "O0";
-        JSONObject obj0 = new JSONObject();
-        obj0.put("objectId", name0);
-        obj0.put("x", 300);
-        obj0.put("y", 50);
-        obj0.put("cols", 4);
-        obj0.put("rows", 1);
-        selectableObjects.put(name0, obj0);
-
-        String name1 = "O1";
-        JSONObject obj1 = new JSONObject();
-        obj1.put("objectId", name1);
-        obj1.put("x", 300);
-        obj1.put("y", 100);
-        obj1.put("cols", 1);
-        obj1.put("rows", 3);
-        selectableObjects.put(name1, obj1);
 
         try {
             while (true) {

@@ -1,3 +1,4 @@
+<<<<<<< Updated upstream
 C:\Users\joanc\Documents\GitHub\DAM-ServeisProcessos\03 Proxmox\Exemple\src\main\java\com\client\UtilsViews.java
 C:\Users\joanc\Documents\GitHub\DAM-ServeisProcessos\03 Proxmox\Exemple\src\main\java\com\client\PlayTimer.java
 C:\Users\joanc\Documents\GitHub\DAM-ServeisProcessos\03 Proxmox\Exemple\src\main\java\com\client\UtilsWS.java
@@ -7,3 +8,16 @@ C:\Users\joanc\Documents\GitHub\DAM-ServeisProcessos\03 Proxmox\Exemple\src\main
 C:\Users\joanc\Documents\GitHub\DAM-ServeisProcessos\03 Proxmox\Exemple\src\main\java\com\client\Main.java
 C:\Users\joanc\Documents\GitHub\DAM-ServeisProcessos\03 Proxmox\Exemple\src\main\java\com\client\PlayGrid.java
 C:\Users\joanc\Documents\GitHub\DAM-ServeisProcessos\03 Proxmox\Exemple\src\main\java\com\client\CtrlPlay.java
+=======
+C:\Users\joanc\Documents\GitHub\Battleship\Exemple\src\main\java\com\client\CtrlWait.java
+C:\Users\joanc\Documents\GitHub\Battleship\Exemple\src\main\java\com\client\PlayGrid.java
+C:\Users\joanc\Documents\GitHub\Battleship\Exemple\src\main\java\com\client\CtrlGame.java
+C:\Users\joanc\Documents\GitHub\Battleship\Exemple\src\main\java\com\client\UtilsViews.java
+C:\Users\joanc\Documents\GitHub\Battleship\Exemple\src\main\java\com\client\PlayTimer.java
+C:\Users\joanc\Documents\GitHub\Battleship\Exemple\src\main\java\com\client\CtrlConfig.java
+C:\Users\joanc\Documents\GitHub\Battleship\Exemple\src\main\java\com\client\Main.java
+C:\Users\joanc\Documents\GitHub\Battleship\Exemple\src\main\java\com\client\CtrlChoose.java
+C:\Users\joanc\Documents\GitHub\Battleship\Exemple\src\main\java\com\client\CtrlPlay.java
+C:\Users\joanc\Documents\GitHub\Battleship\Exemple\src\main\java\com\server\Main.java
+C:\Users\joanc\Documents\GitHub\Battleship\Exemple\src\main\java\com\client\UtilsWS.java
+>>>>>>> Stashed changes
