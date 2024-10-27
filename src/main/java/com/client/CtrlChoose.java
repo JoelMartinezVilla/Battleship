@@ -191,6 +191,85 @@ public class CtrlChoose implements Initializable {
         }
     }
    
+    private boolean isColliding(double x, double y, int cols, int rows, Map<String, JSONObject> userObjects) {
+        for (Map.Entry<String, JSONObject> entry : userObjects.entrySet()) {
+            if (entry.getKey().equals(selectedObject)) continue; // Saltar el objeto actual
+
+
+            JSONObject otherObj = entry.getValue();
+            int otherX = otherObj.getInt("x");
+            int otherY = otherObj.getInt("y");
+            int otherCols = otherObj.getInt("cols");
+            int otherRows = otherObj.getInt("rows");
+
+
+            if (isOverlapping(x, y, cols, rows, otherX, otherY, otherCols, otherRows)) {
+                return true; // Hay colisión
+            }
+        }
+        return false; // No hay colisión
+    }
+
+    private boolean isOverlapping(double x1, double y1, int cols1, int rows1, double x2, double y2, int cols2, int rows2) {
+        double cellSize = grid.getCellSize();
+
+
+        // Coordenadas de los bordes de ambos objetos
+        double leftA = x1;
+        double rightA = x1 + cols1 * cellSize;
+        double topA = y1;
+        double bottomA = y1 + rows1 * cellSize;
+
+
+        double leftB = x2;
+        double rightB = x2 + cols2 * cellSize;
+        double topB = y2;
+        double bottomB = y2 + rows2 * cellSize;
+
+
+        // Verificación de superposición
+        return leftA < rightB && rightA > leftB && topA < bottomB && bottomA > topB;
+    }
+
+    public boolean isShipOverriding(String objectId) {
+
+        Map<String, JSONObject> userObjects = selectableObjects.get(Main.userId);
+        JSONObject obj = userObjects.get(objectId);
+        
+        // Verificar que el objeto existe y tiene las claves necesarias
+        if (obj == null || !obj.has("col") || !obj.has("row") || !obj.has("cols") || !obj.has("rows")) {
+            System.out.println("Objeto no encontrado o faltan claves: " + objectId);
+            return false; // O lanzar una excepción, según el manejo de errores que prefieras
+        }
+    
+        int objFirstCol = obj.getInt("col");
+        int objFirstRow = obj.getInt("row");
+        int objLastCol = obj.getInt("cols") + objFirstCol - 1;  // Ajuste para la última columna
+        int objLastRow = obj.getInt("rows") + objFirstRow - 1;  // Ajuste para la última fila
+    
+        for (String otherObjectId : userObjects.keySet()) {
+            if (!otherObjectId.equals(objectId)) { 
+                JSONObject otherObj = userObjects.get(otherObjectId);
+    
+                // Verificar que el objeto existe y tiene las claves necesarias
+                if (otherObj == null || !otherObj.has("col") || !otherObj.has("row") || !otherObj.has("cols") || !otherObj.has("rows")) {
+                    continue; // Saltar objetos que no tienen la información necesaria
+                }
+    
+                int otherFirstCol = otherObj.getInt("col");
+                int otherFirstRow = otherObj.getInt("row");
+                int otherLastCol = otherObj.getInt("cols") + otherFirstCol - 1;  // Ajuste similar
+                int otherLastRow = otherObj.getInt("rows") + otherFirstRow - 1;  // Ajuste similar
+    
+                // Comprobamos si las posiciones de los barcos se solapan
+                if (objFirstCol <= otherLastCol && objLastCol >= otherFirstCol && 
+                    objFirstRow <= otherLastRow && objLastRow >= otherFirstRow) {
+                    return true;  // Hay superposición
+                }
+            }
+        }
+        return false;  // No hay superposición
+    }
 
 
     private void onMouseReleased(MouseEvent event) {
@@ -272,24 +351,43 @@ public class CtrlChoose implements Initializable {
 
     // Draw game to canvas
     public void draw() {
-
-        // Clean drawing area
         gc.clearRect(0, 0, canvas.getWidth(), canvas.getHeight());
 
-       
 
-        // Draw grid
-        drawGrid();
+        for (String clientId : clientMousePositions.keySet()) {
+            JSONObject position = clientMousePositions.get(clientId);
 
-        // Draw selectable objects
-        for (String objectId : selectableObjects.keySet()) {
-            JSONObject selectableObject = selectableObjects.get(objectId);
 
-            drawSelectableObject(objectId, selectableObject);
+            int col = position.getInt("col");
+            int row = position.getInt("row");
+
+
+            if (row >= 0 && col >= 0) {
+                gc.setFill("A".equals(clientId) ? Color.LIGHTBLUE : Color.LIGHTGREEN);
+                gc.fillRect(grid.getCellX(col), grid.getCellY(row), grid.getCellSize(), grid.getCellSize());
+            }
         }
 
-        // Draw FPS if needed
-        if (showFPS) { animationTimer.drawFPS(gc); }   
+
+        drawGrid();
+
+
+
+        Map<String, JSONObject> userObjects = selectableObjects.get(Main.userId);
+        if (userObjects != null) {
+            for (String objectId : userObjects.keySet()) {
+                JSONObject obj = userObjects.get(objectId);
+                drawSelectableObject(objectId, obj);
+            }
+        }
+
+
+        for (String clientId : clientMousePositions.keySet()) {
+            JSONObject position = clientMousePositions.get(clientId);
+            gc.setFill("A".equals(clientId) ? Color.BLUE : Color.GREEN);
+            gc.fillOval(position.getInt("x") - 5, position.getInt("y") - 5, 10, 10);
+        }
+        if (showFPS) { animationTimer.drawFPS(gc); }
     }
 
     public void drawGrid() {

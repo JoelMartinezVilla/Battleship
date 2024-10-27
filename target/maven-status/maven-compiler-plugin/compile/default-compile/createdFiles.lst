@@ -1,4 +1,5 @@
 com\client\PlayGrid.class
+com\client\CtrlGame.class
 com\server\Main.class
 com\client\Main.class
 com\client\CtrlConfig.class

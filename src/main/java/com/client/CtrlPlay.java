@@ -315,8 +315,7 @@ public class CtrlPlay implements Initializable {
         // Draw selectable objects
         for (String objectId : selectableObjects.keySet()) {
             JSONObject selectableObject = selectableObjects.get(objectId);
-            boolean override = false;
-            drawSelectableObject(objectId, selectableObject, override);
+            drawSelectableObject(objectId, selectableObject);
         }
 
         // Draw mouse circles
