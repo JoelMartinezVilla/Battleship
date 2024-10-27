@@ -1,0 +1,42 @@
+# Maven target directory
+target/
+
+# Logs
+*.log
+
+# Compiled class files
+*.class
+
+# JAR and WAR files
+*.jar
+*.war
+
+# IDE specific files
+.idea/
+*.iml
+*.hprof
+*.class
+
+# Operating system files
+.DS_Store
+Thumbs.db
+
+# Maven wrapper
+.mvn/wrapper/maven-wrapper.jar
+.mvn/wrapper/maven-wrapper.properties
+
+# Local environment configurations
+*.properties
+
+# Java artifacts
+*.class
+
+# Maven logs
+mvn-log.txt
+
+# Dependency directories
+**/dependency-reduced-pom.xml
+
+# General
+*.swp
+*~

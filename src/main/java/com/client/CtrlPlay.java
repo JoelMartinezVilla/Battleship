@@ -5,7 +5,9 @@ import java.util.HashMap;
 import java.util.Map;
 import java.util.ResourceBundle;
 
+
 import org.json.JSONObject;
+
 
 import javafx.fxml.FXML;
 import javafx.fxml.Initializable;
@@ -14,52 +16,60 @@ import javafx.scene.canvas.GraphicsContext;
 import javafx.scene.input.MouseEvent;
 import javafx.scene.paint.Color;
 
+
 public class CtrlPlay implements Initializable {
+
 
     @FXML
     private Canvas canvas;
     private GraphicsContext gc;
     private Boolean showFPS = false;
 
+
     private PlayTimer animationTimer;
     private PlayGrid grid;
+
 
     public Map<String, JSONObject> clientMousePositions = new HashMap<>();
     private Boolean mouseDragging = false;
     private double mouseOffsetX, mouseOffsetY;
 
+
     public static Map<String, JSONObject> selectableObjects = new HashMap<>();
     private String selectedObject = "";
+
 
     @Override
     public void initialize(URL url, ResourceBundle rb) {
 
+
         // Get drawing context
         this.gc = canvas.getGraphicsContext2D();
 
-        // Set listeners
-        UtilsViews.parentContainer.heightProperty().addListener((observable, oldValue, newvalue) -> {
-            onSizeChanged();
-        });
-        UtilsViews.parentContainer.widthProperty().addListener((observable, oldValue, newvalue) -> {
-            onSizeChanged();
-        });
 
+        // Set listeners
+        UtilsViews.parentContainer.heightProperty().addListener((observable, oldValue, newvalue) -> { onSizeChanged(); });
+        UtilsViews.parentContainer.widthProperty().addListener((observable, oldValue, newvalue) -> { onSizeChanged(); });
+       
         canvas.setOnMouseMoved(this::setOnMouseMoved);
         canvas.setOnMousePressed(this::onMousePressed);
         canvas.setOnMouseDragged(this::onMouseDragged);
         canvas.setOnMouseReleased(this::onMouseReleased);
 
+
         // Define grid
         grid = new PlayGrid(25, 25, 25, 10, 10);
+
 
         // Start run/draw timer bucle
         animationTimer = new PlayTimer(this::run, this::draw, 0);
         start();
     }
 
+
     // When window changes its size
     public void onSizeChanged() {
+
 
         double width = UtilsViews.parentContainer.getWidth();
         double height = UtilsViews.parentContainer.getHeight();
@@ -81,34 +91,40 @@ public class CtrlPlay implements Initializable {
         double mouseX = event.getX();
         double mouseY = event.getY();
 
+
         JSONObject newPosition = new JSONObject();
         newPosition.put("x", mouseX);
         newPosition.put("y", mouseY);
-        if (grid.isPositionInsideGrid(mouseX, mouseY)) {
+        if (grid.isPositionInsideGrid(mouseX, mouseY)) {                
             newPosition.put("col", grid.getCol(mouseX));
             newPosition.put("row", grid.getRow(mouseY));
         } else {
             newPosition.put("col", -1);
             newPosition.put("row", -1);
         }
-        clientMousePositions.put(Main.clientId, newPosition);
+        clientMousePositions.put(Main.userId, newPosition);
 
-        JSONObject msgObj = clientMousePositions.get(Main.clientId);
+
+        JSONObject msgObj = clientMousePositions.get(Main.userId);
         msgObj.put("type", "clientMouseMoving");
-        msgObj.put("clientId", Main.clientId);
-
+        msgObj.put("userId", Main.userId);
+   
         if (Main.wsClient != null) {
             Main.wsClient.safeSend(msgObj.toString());
         }
     }
 
+
     private void onMousePressed(MouseEvent event) {
+
 
         double mouseX = event.getX();
         double mouseY = event.getY();
 
+
         selectedObject = "";
         mouseDragging = false;
+
 
         for (String objectId : selectableObjects.keySet()) {
             JSONObject obj = selectableObjects.get(objectId);
@@ -117,7 +133,8 @@ public class CtrlPlay implements Initializable {
             int cols = obj.getInt("cols");
             int rows = obj.getInt("rows");
 
-            if (isPositionInsideObject(mouseX, mouseY, objX, objY, cols, rows)) {
+
+            if (isPositionInsideObject(mouseX, mouseY, objX, objY,  cols, rows)) {
                 selectedObject = objectId;
                 mouseDragging = true;
                 mouseOffsetX = event.getX() - objX;
@@ -132,16 +149,17 @@ public class CtrlPlay implements Initializable {
             JSONObject obj = selectableObjects.get(selectedObject);
             double objX = event.getX() - mouseOffsetX;
             double objY = event.getY() - mouseOffsetY;
-
+           
             obj.put("x", objX);
             obj.put("y", objY);
             obj.put("col", grid.getCol(objX));
             obj.put("row", grid.getRow(objY));
 
+
             JSONObject msgObj = selectableObjects.get(selectedObject);
             msgObj.put("type", "clientSelectableObjectMoving");
             msgObj.put("objectId", obj.getString("objectId"));
-
+       
             if (Main.wsClient != null) {
                 Main.wsClient.safeSend(msgObj.toString());
             }
@@ -243,36 +261,45 @@ public class CtrlPlay implements Initializable {
         double objectTopY = objY;
         double objectBottomY = objY + objectHeight;
 
+
         return positionX >= objectLeftX && positionX < objectRightX &&
-                positionY >= objectTopY && positionY < objectBottomY;
+               positionY >= objectTopY && positionY < objectBottomY;
     }
+
 
     // Run game (and animations)
     private void run(double fps) {
 
-        if (animationTimer.fps < 1) {
-            return;
-        }
+
+        if (animationTimer.fps < 1) { return; }
+
 
         // Update objects and animations here
     }
 
+
     // Draw game to canvas
     public void draw() {
+
 
         // Clean drawing area
         gc.clearRect(0, 0, canvas.getWidth(), canvas.getHeight());
 
+
         // Draw colored 'over' cells
-        for (String clientId : clientMousePositions.keySet()) {
-            JSONObject position = clientMousePositions.get(clientId);
+
+
+        for (String userId : clientMousePositions.keySet()) {
+            JSONObject position = clientMousePositions.get(userId);
+
 
             int col = position.getInt("col");
             int row = position.getInt("row");
 
+
             // Comprovar si està dins dels límits de la graella
             if (row >= 0 && col >= 0) {
-                if ("A".equals(clientId)) {
+                if ("A".equals(userId)) {
                     gc.setFill(Color.LIGHTBLUE);
                 } else {
                     gc.setFill(Color.LIGHTGREEN);
@@ -322,8 +349,10 @@ public class CtrlPlay implements Initializable {
         }
     }
 
-    public void drawSelectableObject(String objectId, JSONObject obj, boolean override) {
+
+    public void drawSelectableObject(String objectId, JSONObject obj) {
         double cellSize = grid.getCellSize();
+
 
         int x = obj.getInt("x");
         int y = obj.getInt("y");

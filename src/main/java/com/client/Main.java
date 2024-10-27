@@ -1,10 +1,13 @@
 package com.client;
 
+
 import java.util.ArrayList;
 import java.util.List;
 
+
 import org.json.JSONArray;
 import org.json.JSONObject;
+
 
 import javafx.application.Application;
 import javafx.application.Platform;
@@ -15,41 +18,52 @@ import javafx.scene.image.Image;
 import javafx.stage.Stage;
 import javafx.util.Duration;
 
-public class Main extends Application {
+
+public class Main extends Application  {
+
 
     public static UtilsWS wsClient;
-
-    public static String clientId = "";
+    public static String userId = "";
     public static CtrlConfig ctrlConfig;
     public static CtrlWait ctrlWait;
     public static CtrlPlay ctrlPlay;
-    public static CtrlPlay ctrlChoose;
+    public static CtrlChoose ctrlChoose;
+   // public static CtrlGame ctrlGame;
+
+
+
 
     public static void main(String[] args) {
-
-        // Iniciar app JavaFX   
+        // Iniciar app JavaFX  
         launch(args);
     }
-    
+   
     @Override
     public void start(Stage stage) throws Exception {
-
         final int windowWidth = 400;
         final int windowHeight = 300;
 
+
         UtilsViews.parentContainer.setStyle("-fx-font: 14 arial;");
-        UtilsViews.addView(getClass(), "ViewConfig", "/assets/viewConfig.fxml"); 
+        UtilsViews.addView(getClass(), "ViewConfig", "/assets/viewConfig.fxml");
         UtilsViews.addView(getClass(), "ViewWait", "/assets/viewWait.fxml");
-        UtilsViews.addView(getClass(), "ViewPlay", "/assets/viewPlay.fxml");
         UtilsViews.addView(getClass(), "ViewChoose", "/assets/viewChoose.fxml");
+        UtilsViews.addView(getClass(), "ViewPlay", "/assets/viewPlay.fxml");
+        //UtilsViews.addView(getClass(), "ViewGame", "/assets/viewGame.fxml");
+
+
+
 
         ctrlConfig = (CtrlConfig) UtilsViews.getController("ViewConfig");
         ctrlWait = (CtrlWait) UtilsViews.getController("ViewWait");
+        ctrlChoose = (CtrlChoose) UtilsViews.getController("ViewChoose");
         ctrlPlay = (CtrlPlay) UtilsViews.getController("ViewPlay");
-        ctrlChoose = (CtrlPlay) UtilsViews.getController("ViewChoose");
+       // ctrlGame = (CtrlGame) UtilsViews.getController("ViewGame");
+
+
+
 
         Scene scene = new Scene(UtilsViews.parentContainer);
-        
         stage.setScene(scene);
         stage.onCloseRequestProperty(); // Call close method when closing window
         stage.setTitle("JavaFX");
@@ -64,8 +78,9 @@ public class Main extends Application {
         }
     }
 
+
     @Override
-    public void stop() { 
+    public void stop() {
         if (wsClient != null) {
             wsClient.forceExit();
         }
@@ -87,32 +102,36 @@ public class Main extends Application {
         return list;
     }
 
-    public static void connectToServer() {
 
+    public static void connectToServer() {
         ctrlConfig.txtMessage.setTextFill(Color.BLACK);
         ctrlConfig.txtMessage.setText("Connecting ...");
-    
-        pauseDuring(1500, () -> { // Give time to show connecting message ...
 
+
+        pauseDuring(1500, () -> { // Give time to show connecting message ...
             String protocol = ctrlConfig.txtProtocol.getText();
             String host = ctrlConfig.txtHost.getText();
             String port = ctrlConfig.txtPort.getText();
             wsClient = UtilsWS.getSharedInstance(protocol + "://" + host + ":" + port);
-    
+
+
             wsClient.onMessage((response) -> { Platform.runLater(() -> { wsMessage(response); }); });
             wsClient.onError((response) -> { Platform.runLater(() -> { wsError(response); }); });
         });
     }
-   
+
+
+
+
     private static void wsMessage(String response) {
-        // System.out.println(response);
         JSONObject msgObj = new JSONObject(response);
         switch (msgObj.getString("type")) {
             case "clients":
-                if (clientId == "") {
-                    clientId = msgObj.getString("id");
+                // Guarda el userId cuando lo reciba del servidor
+                if (userId.equals("")) {
+                    userId = msgObj.getString("id");
                 }
-                if (UtilsViews.getActiveView() != "ViewWait") {
+                if (!UtilsViews.getActiveView().equals("ViewWait")) {
                     UtilsViews.setViewAnimating("ViewWait");
                 }
                 List<String> stringList = jsonArrayToList(msgObj.getJSONArray("list"), String.class);
@@ -123,29 +142,54 @@ public class Main extends Application {
                 int value = msgObj.getInt("value");
                 String txt = String.valueOf(value);
                 if (value == 0) {
-                    UtilsViews.setViewAnimating("ViewChoose");
-                    txt = "GO";
+                    //if (!UtilsViews.getActiveView().equals("ViewChoose")) {
+                        UtilsViews.setViewAnimating("ViewChoose");
+                        txt = "GO";
+                   // }
+                    //else {
+                     //   UtilsViews.setViewAnimating("ViewGame");
+                   // }
                 }
                 ctrlWait.txtTitle.setText(txt);
                 break;
             case "serverMouseMoving":
-                ctrlPlay.setPlayersMousePositions(msgObj.getJSONObject("positions"));
+                if (UtilsViews.getActiveView().equals("ViewChoose")) {
+                    ctrlChoose.setPlayersMousePositions(msgObj.getJSONObject("positions"));
+                }
+                if (UtilsViews.getActiveView().equals("ViewPlay")) {
+                    ctrlPlay.setPlayersMousePositions(msgObj.getJSONObject("positions"));    
+                }
                 break;
             case "serverSelectableObjects":
-                ctrlPlay.setSelectableObjects(msgObj.getJSONObject("selectableObjects"));
+                ctrlChoose.setSelectableObjects(msgObj.getJSONObject("selectableObjects"));
                 break;
         }
     }
 
-    private static void wsError(String response) {
 
+    // Método auxiliar para enviar mensajes con userId incluido
+    public static void sendMessageToServer(String type, JSONObject data) {
+        JSONObject message = new JSONObject();
+        message.put("type", type);
+        message.put("userId", userId); // Incluye el userId del cliente
+        message.put("data", data);     // Datos específicos de la acción
+        wsClient.safeSend(message.toString());
+    }
+
+
+
+
+    private static void wsError(String response) {
         String connectionRefused = "Connection refused";
-        if (response.indexOf(connectionRefused) != -1) {
+        if (response.contains(connectionRefused)) {
             ctrlConfig.txtMessage.setTextFill(Color.RED);
             ctrlConfig.txtMessage.setText(connectionRefused);
-            pauseDuring(1500, () -> {
-                ctrlConfig.txtMessage.setText("");
-            });
+            pauseDuring(1500, () -> ctrlConfig.txtMessage.setText(""));
         }
     }
 }
+
+
+
+
+
