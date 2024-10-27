@@ -27,8 +27,8 @@ public class Main extends Application  {
     public static CtrlConfig ctrlConfig;
     public static CtrlWait ctrlWait;
     public static CtrlPlay ctrlPlay;
-    public static CtrlChoose ctrlChoose;
-   // public static CtrlGame ctrlGame;
+    //public static CtrlChoose ctrlChoose;
+    public static CtrlGame ctrlGame;
 
 
 
@@ -47,18 +47,18 @@ public class Main extends Application  {
         UtilsViews.parentContainer.setStyle("-fx-font: 14 arial;");
         UtilsViews.addView(getClass(), "ViewConfig", "/assets/viewConfig.fxml");
         UtilsViews.addView(getClass(), "ViewWait", "/assets/viewWait.fxml");
-        UtilsViews.addView(getClass(), "ViewChoose", "/assets/viewChoose.fxml");
+        //UtilsViews.addView(getClass(), "ViewChoose", "/assets/viewChoose.fxml");
         UtilsViews.addView(getClass(), "ViewPlay", "/assets/viewPlay.fxml");
-        //UtilsViews.addView(getClass(), "ViewGame", "/assets/viewGame.fxml");
+        UtilsViews.addView(getClass(), "ViewGame", "/assets/viewGame.fxml");
 
 
 
 
         ctrlConfig = (CtrlConfig) UtilsViews.getController("ViewConfig");
         ctrlWait = (CtrlWait) UtilsViews.getController("ViewWait");
-        ctrlChoose = (CtrlChoose) UtilsViews.getController("ViewChoose");
+        //ctrlChoose = (CtrlChoose) UtilsViews.getController("ViewChoose");
         ctrlPlay = (CtrlPlay) UtilsViews.getController("ViewPlay");
-       // ctrlGame = (CtrlGame) UtilsViews.getController("ViewGame");
+        ctrlGame = (CtrlGame) UtilsViews.getController("ViewGame");
 
 
 
@@ -127,6 +127,7 @@ public class Main extends Application  {
 
 
     private static void wsMessage(String response) {
+        System.out.println(response);
         JSONObject msgObj = new JSONObject(response);
         switch (msgObj.getString("type")) {
             case "clients":
@@ -146,7 +147,8 @@ public class Main extends Application  {
                 String txt = String.valueOf(value);
                 if (value == 0) {
                     //if (!UtilsViews.getActiveView().equals("ViewChoose")) {
-                        UtilsViews.setViewAnimating("ViewChoose");
+                        //UtilsViews.setViewAnimating("ViewChoose");
+                        UtilsViews.setViewAnimating("ViewGame");
                         txt = "GO";
                    // }
                     //else {
@@ -156,15 +158,17 @@ public class Main extends Application  {
                 ctrlWait.txtTitle.setText(txt);
                 break;
             case "serverMouseMoving":
-                if (UtilsViews.getActiveView().equals("ViewChoose")) {
-                    ctrlChoose.setPlayersMousePositions(msgObj.getJSONObject("positions"));
-                }
-                if (UtilsViews.getActiveView().equals("ViewPlay")) {
-                    ctrlPlay.setPlayersMousePositions(msgObj.getJSONObject("positions"));    
-                }
+                //if (UtilsViews.getActiveView().equals("ViewChoose")) {
+                   // ctrlChoose.setPlayersMousePositions(msgObj.getJSONObject("positions"));
+                //}
+                //if (UtilsViews.getActiveView().equals("ViewPlay")) {
+                ctrlGame.setPlayersMousePositions(msgObj.getJSONObject("positions"));    
+                //}
                 break;
             case "serverSelectableObjects":
-                ctrlChoose.setSelectableObjects(msgObj.getJSONObject("selectableObjects"));
+                //ctrlChoose.setSelectableObjects(msgObj.getJSONObject("selectableObjects"));
+                ctrlGame.setpositionShips(msgObj.getJSONObject("selectableObjects"));
+
                 break;
         }
     }
