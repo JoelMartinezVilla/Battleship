@@ -52,22 +52,28 @@ public class Main extends WebSocketServer {
         obj0.put("y", 50);
         obj0.put("cols", 4);
         obj0.put("rows", 1);
+        obj0.put("cellsTouch", 0);
+        obj0.put("touched", false);
         ships.put("O0", obj0);
 
         JSONObject obj1 = new JSONObject();
         obj1.put("objectId", "O1");
         obj1.put("x", 50);
-        obj1.put("y", 80);
+        obj1.put("y", 75);
         obj1.put("cols", 1);
         obj1.put("rows", 3);
+        obj1.put("cellsTouch", 0);
+        obj1.put("touched", false);
         ships.put("O1", obj1);
 
         JSONObject obj2 = new JSONObject();
         obj2.put("objectId", "O2");
-        obj2.put("x", 80);
-        obj2.put("y", 80);
+        obj2.put("x", 75);
+        obj2.put("y", 75);
         obj2.put("cols", 2);
         obj2.put("rows", 1);
+        obj2.put("cellsTouch", 0);
+        obj2.put("touched", false);
         ships.put("O2", obj2);
 
         // Usa el nombre del cliente como userId para almacenar sus objetos seleccionables

@@ -2,6 +2,7 @@ package com.client;
 
 
 import java.net.URL;
+import java.util.ArrayList;
 import java.util.HashMap;
 import java.util.Map;
 import java.util.ResourceBundle;
@@ -43,9 +44,10 @@ public class CtrlGame implements Initializable {
 
     private String ship = "";
 
-    public static Map<String, Map<String, JSONObject>> touchedPositions = new HashMap<>();
+    //public static Map<String, Map<String, JSONObject>> touchedPositions = new HashMap<>();
+    public static ArrayList<JSONObject> touchedCellssWater = new  ArrayList<JSONObject>();
 
-    private String touch = "";
+    //private String touch = "";
 
 
 
@@ -108,14 +110,14 @@ public class CtrlGame implements Initializable {
         Main.sendMessageToServer("clientMouseMoving", newPosition);
     }
 
-
+   
+      
+        
     private void onMousePressed(MouseEvent event) {
         double mouseX = event.getX();
         double mouseY = event.getY();
 
-        
-        // Que se guarde en las posiciones tocadas ***
-
+        // Verifica si el barco ha sido tocado
         Map<String, JSONObject> userObjects = positionShips.get(Main.userId);
         if (userObjects != null) {
             for (String objectId : userObjects.keySet()) {
@@ -125,17 +127,45 @@ public class CtrlGame implements Initializable {
                 int cols = obj.getInt("cols");
                 int rows = obj.getInt("rows");
 
+                int touchedCol = (int)((mouseX - objX) / grid.getCellSize());
+                int touchedRow = (int)((mouseY - objY) / grid.getCellSize());
 
                 if (isPositionInsideObject(mouseX, mouseY, objX, objY, cols, rows)) {
-                    ship = objectId;
-                    mouseDragging = true;
-                    mouseOffsetX = event.getX() - objX;
-                    mouseOffsetY = event.getY() - objY;
+                    // Calcula la columna y la fila dentro del barco que fueron tocadas
+                   
+
+                    // Crea una lista de celdas tocadas si no existe
+                    if (!obj.has("touchedCellsShips")) {
+                        obj.put("touchedCellsShips", new ArrayList<JSONObject>());
+                    }
+
+                    // Agrega la celda tocada a la lista de celdas tocadas
+                    JSONObject touchedCell = new JSONObject();
+                    touchedCell.put("col", touchedCol);
+                    touchedCell.put("row", touchedRow);
+                    obj.getJSONArray("touchedCellsShips").put(touchedCell);
+
+                    // Indica que el barco ha sido tocado
+                    obj.put("touched", true);
+
+                    System.out.println("Celda tocada del barco " + objectId + ": (" + touchedCol + ", " + touchedRow + ")");
                     break;
+                }
+                // Has tocado agua
+                else {
+                    touchedCol = (int)((mouseX - grid.getStartX()) / grid.getCellSize());
+                    touchedRow = (int)((mouseY - grid.getStartY()) / grid.getCellSize());
+
+                    JSONObject touchedCell = new JSONObject();
+                    touchedCell.put("col", touchedCol);
+                    touchedCell.put("row", touchedRow);
+                    touchedCellssWater.add(touchedCell);
                 }
             }
         }
     }
+
+
 
 
     public void setpositionShips(JSONObject objects) {
@@ -165,6 +195,7 @@ public class CtrlGame implements Initializable {
 
     public Boolean isPositionInsideObject(double positionX, double positionY, int objX, int objY, int cols, int rows) {
         double cellSize = grid.getCellSize();
+       // System.out.println("CELL SIZE: " + cellSize + " cols: " + cols + " rows: " + rows);
         double objectWidth = cols * cellSize;
         double objectHeight = rows * cellSize;
 
@@ -211,14 +242,15 @@ public class CtrlGame implements Initializable {
         if (userObjects != null) {
             for (String objectId : userObjects.keySet()) {
                 JSONObject obj = userObjects.get(objectId);
-                drawpositionShips(objectId, obj);
+                Boolean touchedFlag = obj.optBoolean("touched", false);
+                drawpositionShips(objectId, touchedFlag, obj);
             }
         }
 
 
         for (String clientId : clientMousePositions.keySet()) {
             JSONObject position = clientMousePositions.get(clientId);
-            gc.setFill("A".equals(clientId) ? Color.BLUE : Color.GREEN);
+            gc.setFill("A".equals(clientId) ? Color.YELLOW : Color.GREEN);
             gc.fillOval(position.getInt("x") - 5, position.getInt("y") - 5, 10, 10);
         }
         if (showFPS) { animationTimer.drawFPS(gc); }  
@@ -227,58 +259,67 @@ public class CtrlGame implements Initializable {
 
     public void drawGrid() {
         gc.setStroke(Color.BLACK);
-
+        double cellSize = grid.getCellSize();
+        double startX = grid.getStartX();
+        double startY = grid.getStartY();
 
         for (int row = 0; row < grid.getRows(); row++) {
             for (int col = 0; col < grid.getCols(); col++) {
-                double cellSize = grid.getCellSize();
-                double x = grid.getStartX() + col * cellSize;
-                double y = grid.getStartY() + row * cellSize;
+                double x = startX + col * cellSize;
+                double y = startY + row * cellSize;
+                gc.setFill(Color.GREY);
+                gc.fillRect(x, y, cellSize, cellSize);
+                gc.setStroke(Color.BLACK);
                 gc.strokeRect(x, y, cellSize, cellSize);
+            }
+        }
+
+        if (touchedCellssWater.size() > 0) {
+            for (int i = 0; i < touchedCellssWater.size(); i++) {
+                JSONObject touchedCell = touchedCellssWater.get(i);
+                int touchedCol = touchedCell.getInt("col");
+                int touchedRow = touchedCell.getInt("row");
+                double touchedX = startX + touchedCol * cellSize;
+                double touchedY = startY + touchedRow * cellSize;
+
+                gc.setFill(Color.BLUE);
+                gc.fillRect(touchedX, touchedY, cellSize, cellSize);
+                gc.setStroke(Color.BLACK);
+                gc.strokeRect(touchedX, touchedY, cellSize, cellSize);
             }
         }
     }
 
+    
 
-    public void drawpositionShips(String objectId, JSONObject obj) {
+
+    public void drawpositionShips(String objectId, Boolean touched, JSONObject obj) {
         double cellSize = grid.getCellSize();
-
-
+    
+        // Coordenadas iniciales del barco
         int x = obj.getInt("x");
         int y = obj.getInt("y");
-        double width = obj.getInt("cols") * cellSize;
-        double height = obj.getInt("rows") * cellSize;
-
-
-        Color color;
-        switch (objectId.toLowerCase()) {
-            case "red":
-                color = Color.RED;
-                break;
-            case "blue":
-                color = Color.BLUE;
-                break;
-            case "green":
-                color = Color.GREEN;
-                break;
-            case "yellow":
-                color = Color.YELLOW;
-                break;
-            default:
-                color = Color.GRAY;
-                break;
+    
+        // Si el barco ha sido tocado, dibuja cada celda en la lista de celdas tocadas
+        if (touched && obj.has("touchedCellsShips")) {
+            for (int i = 0; i < obj.getJSONArray("touchedCellsShips").length(); i++) {
+                JSONObject touchedCell = obj.getJSONArray("touchedCellsShips").getJSONObject(i);
+    
+                // Obtén la columna y fila de la celda tocada
+                int touchedCol = touchedCell.getInt("col");
+                int touchedRow = touchedCell.getInt("row");
+    
+                // Calcula la posición de la celda tocada
+                double touchedX = x + touchedCol * cellSize;
+                double touchedY = y + touchedRow * cellSize;
+    
+                // Dibuja la celda tocada en rojo
+                gc.setFill(Color.RED);
+                gc.fillRect(touchedX, touchedY, cellSize, cellSize);
+                gc.setStroke(Color.BLACK);
+                gc.strokeRect(touchedX, touchedY, cellSize, cellSize);
+            }
         }
-
-
-        gc.setFill(color);
-        gc.fillRect(x, y, width, height);
-
-
-        gc.setStroke(Color.BLACK);
-        gc.strokeRect(x, y, width, height);
-
-
-        gc.setFill(Color.BLACK);
-        gc.fillText(objectId, x + 5, y + 15);
     }
+    
 }

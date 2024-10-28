@@ -127,7 +127,7 @@ public class Main extends Application  {
 
 
     private static void wsMessage(String response) {
-        System.out.println(response);
+       // System.out.println(response);
         JSONObject msgObj = new JSONObject(response);
         switch (msgObj.getString("type")) {
             case "clients":
