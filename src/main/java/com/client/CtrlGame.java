@@ -6,7 +6,10 @@ import java.util.ArrayList;
 import java.util.HashMap;
 import java.util.Map;
 import java.util.ResourceBundle;
-
+import javafx.application.Platform;
+import javafx.scene.control.Alert;
+import javafx.scene.control.Alert.AlertType;
+import javafx.stage.Stage;
 
 import org.json.JSONObject;
 
@@ -112,57 +115,112 @@ public class CtrlGame implements Initializable {
 
    
       
-        
+
     private void onMousePressed(MouseEvent event) {
         double mouseX = event.getX();
         double mouseY = event.getY();
 
-        // Verifica si el barco ha sido tocado
-        Map<String, JSONObject> userObjects = positionShips.get(Main.userId);
-        if (userObjects != null) {
-            for (String objectId : userObjects.keySet()) {
-                JSONObject obj = userObjects.get(objectId);
-                int objX = obj.getInt("x");
-                int objY = obj.getInt("y");
-                int cols = obj.getInt("cols");
-                int rows = obj.getInt("rows");
+        double startX = grid.getStartX();
+        double startY = grid.getStartY();
+        double cellSize = grid.getCellSize();
 
-                int touchedCol = (int)((mouseX - objX) / grid.getCellSize());
-                int touchedRow = (int)((mouseY - objY) / grid.getCellSize());
+        int touchedCol = (int) ((mouseX - startX) / cellSize);
+        int touchedRow = (int) ((mouseY - startY) / cellSize);
 
-                if (isPositionInsideObject(mouseX, mouseY, objX, objY, cols, rows)) {
-                    // Calcula la columna y la fila dentro del barco que fueron tocadas
-                   
+        if (touchedCol >= 0 && touchedCol < grid.getCols() && touchedRow >= 0 && touchedRow < grid.getRows()) {
+            Map<String, JSONObject> userObjects = positionShips.get(Main.userId);
+            boolean isWater = true;
 
-                    // Crea una lista de celdas tocadas si no existe
-                    if (!obj.has("touchedCellsShips")) {
-                        obj.put("touchedCellsShips", new ArrayList<JSONObject>());
+            if (userObjects != null) {
+                for (String objectId : userObjects.keySet()) {
+                    JSONObject obj = userObjects.get(objectId);
+                    int objX = obj.getInt("x");
+                    int objY = obj.getInt("y");
+                    int cols = obj.getInt("cols");
+                    int rows = obj.getInt("rows");
+
+                    if (isPositionInsideObject(mouseX, mouseY, objX, objY, cols, rows)) {
+                        int objCol = (int) ((mouseX - objX) / cellSize);
+                        int objRow = (int) ((mouseY - objY) / cellSize);
+
+                        if (!obj.has("touchedCellsShips")) {
+                            obj.put("touchedCellsShips", new ArrayList<JSONObject>());
+                        }
+
+                        JSONObject touchedCell = new JSONObject();
+                        touchedCell.put("col", objCol);
+                        touchedCell.put("row", objRow);
+                        obj.getJSONArray("touchedCellsShips").put(touchedCell);
+
+                        obj.put("touched", true);
+                        isWater = false;
+
+                        System.out.println("Celda tocada del barco " + objectId + ": (" + objCol + ", " + objRow + ")");
+
+                        // Comprueba si el barco está completamente hundido
+                        if (isShipSunk(obj)) {
+                            obj.put("sunk", true); // Marca el barco como hundido
+                            System.out.println("¡Barco " + objectId + " hundido!");
+
+                            // Verifica si todos los barcos del jugador están hundidos
+                            if (isAllShipsSunk()) {
+                                // Enviar este mensaje al contrincante ****
+                                showEndGameMessage("Has perdido", "¡El oponente ha ganado el juego!");
+                            }
+                        }
+                        break;
                     }
-
-                    // Agrega la celda tocada a la lista de celdas tocadas
-                    JSONObject touchedCell = new JSONObject();
-                    touchedCell.put("col", touchedCol);
-                    touchedCell.put("row", touchedRow);
-                    obj.getJSONArray("touchedCellsShips").put(touchedCell);
-
-                    // Indica que el barco ha sido tocado
-                    obj.put("touched", true);
-
-                    System.out.println("Celda tocada del barco " + objectId + ": (" + touchedCol + ", " + touchedRow + ")");
-                    break;
-                }
-                // Has tocado agua
-                else {
-                    touchedCol = (int)((mouseX - grid.getStartX()) / grid.getCellSize());
-                    touchedRow = (int)((mouseY - grid.getStartY()) / grid.getCellSize());
-
-                    JSONObject touchedCell = new JSONObject();
-                    touchedCell.put("col", touchedCol);
-                    touchedCell.put("row", touchedRow);
-                    touchedCellssWater.add(touchedCell);
                 }
             }
+
+            if (isWater) {
+                JSONObject touchedWaterCell = new JSONObject();
+                touchedWaterCell.put("col", touchedCol);
+                touchedWaterCell.put("row", touchedRow);
+                touchedCellssWater.add(touchedWaterCell);
+                System.out.println("Celda de agua tocada: (" + touchedCol + ", " + touchedRow + ")");
+            }
         }
+    }
+
+    // Método para comprobar si un barco está hundido
+    private boolean isShipSunk(JSONObject ship) {
+        int cols = ship.getInt("cols");
+        int rows = ship.getInt("rows");
+        int totalCells = cols * rows;
+        int touchedCells = ship.getJSONArray("touchedCellsShips").length();
+        return touchedCells == totalCells;
+    }
+
+    // Método para verificar si todos los barcos están hundidos
+    private boolean isAllShipsSunk() {
+        Map<String, JSONObject> userObjects = positionShips.get(Main.userId);
+        for (JSONObject obj : userObjects.values()) {
+            if (!obj.optBoolean("sunk", false)) {
+                return false; // Si algún barco no está hundido, el jugador aún no ha perdido
+            }
+        }
+        return true; // Todos los barcos están hundidos
+    }
+
+    // Método para mostrar el mensaje de fin de juego
+    private void showEndGameMessage(String title, String message) {
+        Platform.runLater(() -> {
+            Alert alert = new Alert(AlertType.INFORMATION);
+            alert.setTitle(title);
+            alert.setHeaderText(null);
+            alert.setContentText(message);
+
+            alert.setOnHidden(evt -> {
+                // Cierra todas las ventanas y termina la aplicación
+                Stage stage = (Stage) canvas.getScene().getWindow();
+                stage.close();
+                Platform.exit();
+                System.exit(0);
+            });
+
+            alert.showAndWait();
+        });
     }
 
 
