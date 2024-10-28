@@ -50,6 +50,8 @@ public class Main extends WebSocketServer {
         obj0.put("objectId", "O0");
         obj0.put("x", 300);
         obj0.put("y", 50);
+        obj0.put("initial_x", 300);
+        obj0.put("initial_y", 50);
         obj0.put("cols", 4);
         obj0.put("rows", 1);
         ships.put("O0", obj0);
@@ -58,6 +60,8 @@ public class Main extends WebSocketServer {
         obj1.put("objectId", "O1");
         obj1.put("x", 300);
         obj1.put("y", 100);
+        obj1.put("initial_x", 300);
+        obj1.put("initial_y", 100);
         obj1.put("cols", 1);
         obj1.put("rows", 3);
         ships.put("O1", obj1);
@@ -66,11 +70,14 @@ public class Main extends WebSocketServer {
         obj2.put("objectId", "O2");
         obj2.put("x", 310);
         obj2.put("y", 150);
+        obj2.put("initial_x", 310);
+        obj2.put("initial_y", 150);
         obj2.put("cols", 2);
         obj2.put("rows", 1);
         ships.put("O2", obj2);
 
-        // Usa el nombre del cliente como userId para almacenar sus objetos seleccionables
+        // Usa el nombre del cliente como userId para almacenar sus objetos
+        // seleccionables
         selectableObjects.put(clientName, ships);
         sendCountdown();
     }
@@ -123,6 +130,10 @@ public class Main extends WebSocketServer {
                     System.out.println(selectableObjects);
 
                     sendServerSelectableObjects();
+                    break;
+
+                case "startReadyCountdown":
+                    sendReadyCountdown();
                     break;
 
                 // Aquí puedes añadir más tipos de mensajes que maneje el servidor
@@ -239,8 +250,27 @@ public class Main extends WebSocketServer {
         }
     }
 
+    public void sendReadyCountdown() {
+        for (int i = 30; i >= 0; i--) {
+            JSONObject msg = new JSONObject();
+            msg.put("type", "readyCountdown");
+            msg.put("value", i);
+            broadcastMessage(msg.toString(), null);
+            if (i == 0) {
+                sendServerSelectableObjects();
+            } else {
+                try {
+                    Thread.sleep(750);
+                } catch (InterruptedException e) {
+                    e.printStackTrace();
+                }
+            }
+        }
+    }
+
     public void sendServerSelectableObjects() {
-        // Prepara el mensaje de tipo 'serverObjects' con las posiciones de todos los clientes
+        // Prepara el mensaje de tipo 'serverObjects' con las posiciones de todos los
+        // clientes
         JSONObject rst1 = new JSONObject();
         rst1.put("type", "serverSelectableObjects");
         rst1.put("selectableObjects", selectableObjects);

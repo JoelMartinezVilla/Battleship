@@ -24,8 +24,3 @@
       <Button fx:id="startButton" layoutX="489.0" layoutY="421.0" mnemonicParsing="false" text="Start Game" />
    </children>
 </AnchorPane>
-
-
-
-
-
