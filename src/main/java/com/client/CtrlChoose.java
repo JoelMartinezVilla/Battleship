@@ -150,42 +150,6 @@ public class CtrlChoose implements Initializable {
         }
     }
 
-    private boolean isColliding(double x, double y, int cols, int rows, Map<String, JSONObject> userObjects) {
-        for (Map.Entry<String, JSONObject> entry : userObjects.entrySet()) {
-            if (entry.getKey().equals(selectedObject))
-                continue; // Saltar el objeto actual
-
-            JSONObject otherObj = entry.getValue();
-            int otherX = otherObj.getInt("x");
-            int otherY = otherObj.getInt("y");
-            int otherCols = otherObj.getInt("cols");
-            int otherRows = otherObj.getInt("rows");
-
-            if (isOverlapping(x, y, cols, rows, otherX, otherY, otherCols, otherRows)) {
-                return true; // Hay colisión
-            }
-        }
-        return false; // No hay colisión
-    }
-
-    private boolean isOverlapping(double x1, double y1, int cols1, int rows1, double x2, double y2, int cols2,
-            int rows2) {
-        double cellSize = grid.getCellSize();
-
-        // Coordenadas de los bordes de ambos objetos
-        double leftA = x1;
-        double rightA = x1 + cols1 * cellSize;
-        double topA = y1;
-        double bottomA = y1 + rows1 * cellSize;
-
-        double leftB = x2;
-        double rightB = x2 + cols2 * cellSize;
-        double topB = y2;
-        double bottomB = y2 + rows2 * cellSize;
-
-        // Verificación de superposición
-        return leftA < rightB && rightA > leftB && topA < bottomB && bottomA > topB;
-    }
 
     public boolean isShipOverriding(String objectId) {
 

@@ -23,7 +23,7 @@ public class Main extends Application {
     public static CtrlWait ctrlWait;
     public static CtrlPlay ctrlPlay;
     public static CtrlChoose ctrlChoose;
-    // public static CtrlGame ctrlGame;
+    public static CtrlGame ctrlGame;
 
     public static void main(String[] args) {
         // Iniciar app JavaFX
@@ -40,13 +40,13 @@ public class Main extends Application {
         UtilsViews.addView(getClass(), "ViewWait", "/assets/viewWait.fxml");
         UtilsViews.addView(getClass(), "ViewChoose", "/assets/viewChoose.fxml");
         UtilsViews.addView(getClass(), "ViewPlay", "/assets/viewPlay.fxml");
-        // UtilsViews.addView(getClass(), "ViewGame", "/assets/viewGame.fxml");
+        UtilsViews.addView(getClass(), "ViewGame", "/assets/viewGame.fxml");
 
         ctrlConfig = (CtrlConfig) UtilsViews.getController("ViewConfig");
         ctrlWait = (CtrlWait) UtilsViews.getController("ViewWait");
         ctrlChoose = (CtrlChoose) UtilsViews.getController("ViewChoose");
         ctrlPlay = (CtrlPlay) UtilsViews.getController("ViewPlay");
-        // ctrlGame = (CtrlGame) UtilsViews.getController("ViewGame");
+        ctrlGame = (CtrlGame) UtilsViews.getController("ViewGame");
 
         Scene scene = new Scene(UtilsViews.parentContainer);
         stage.setScene(scene);
@@ -149,9 +149,9 @@ public class Main extends Application {
                 if (UtilsViews.getActiveView().equals("ViewChoose")) {
                     ctrlChoose.setPlayersMousePositions(msgObj.getJSONObject("positions"));
                 }
-                // if (UtilsViews.getActiveView().equals("ViewGame")) {
-                // ctrlGame.setPlayersMousePositions(msgObj.getJSONObject("positions"));
-                // }
+                if (UtilsViews.getActiveView().equals("ViewGame")) {
+                    ctrlGame.setPlayersMousePositions(msgObj.getJSONObject("positions"));
+                }
                 break;
             case "serverSelectableObjects":
                 ctrlChoose.setSelectableObjects(msgObj.getJSONObject("selectableObjects"));
