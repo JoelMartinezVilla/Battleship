@@ -102,7 +102,7 @@ public class Main extends WebSocketServer {
     public void onMessage(WebSocket conn, String message) {
         JSONObject obj = new JSONObject(message);
         String userId = clients.get(conn); // Obtiene el userId asociado a la conexión
-
+        JSONObject msg;
         if (obj.has("type")) {
             String type = obj.getString("type");
 
@@ -132,8 +132,16 @@ public class Main extends WebSocketServer {
                     sendServerSelectableObjects();
                     break;
 
-                case "startReadyCountdown":
-                    sendReadyCountdown();
+                case "readyCountdown":
+                    msg = new JSONObject();
+                    msg.put("type", "startReadyCountdown");
+                    broadcastMessage(message.toString(), null);
+                    break;
+
+                case "clientReady":
+                    msg = new JSONObject();
+                    msg.put("type", "serverReady");
+                    broadcastMessage(message.toString(), null);
                     break;
 
                 // Aquí puedes añadir más tipos de mensajes que maneje el servidor
@@ -245,24 +253,6 @@ public class Main extends WebSocketServer {
                     } catch (InterruptedException e) {
                         e.printStackTrace();
                     }
-                }
-            }
-        }
-    }
-
-    public void sendReadyCountdown() {
-        for (int i = 30; i >= 0; i--) {
-            JSONObject msg = new JSONObject();
-            msg.put("type", "readyCountdown");
-            msg.put("value", i);
-            broadcastMessage(msg.toString(), null);
-            if (i == 0) {
-                sendServerSelectableObjects();
-            } else {
-                try {
-                    Thread.sleep(750);
-                } catch (InterruptedException e) {
-                    e.printStackTrace();
                 }
             }
         }

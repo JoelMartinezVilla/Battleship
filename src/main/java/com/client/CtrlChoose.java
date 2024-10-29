@@ -12,6 +12,7 @@ import javafx.fxml.Initializable;
 import javafx.scene.canvas.Canvas;
 import javafx.scene.canvas.GraphicsContext;
 import javafx.scene.control.Button;
+import javafx.scene.control.Label;
 import javafx.scene.input.MouseEvent;
 import javafx.scene.paint.Color;
 
@@ -19,6 +20,9 @@ public class CtrlChoose implements Initializable {
 
     @FXML
     private Canvas canvas;
+
+    @FXML
+    private Label secondsLeft;
 
     @FXML
     private Button startButton; // Inyectar el botón StartButton
@@ -61,9 +65,21 @@ public class CtrlChoose implements Initializable {
         start();
     }
 
+    public void updateSecondsLeft(int time) {
+        secondsLeft.setText(Integer.toString(time));
+    }
+
     private void onStartButtonClick() {
         // Acciones a realizar cuando se hace clic en el botón Start
         System.out.println("El botón Start ha sido presionado.");
+        String client = Main.userId;
+        Main.setClientReady(client, true);
+
+        JSONObject clientInfo = new JSONObject();
+
+        clientInfo.put("type", "clientReady");
+        clientInfo.put("clientId", client);
+        Main.wsClient.safeSend(clientInfo.toString());
 
     }
 
@@ -149,7 +165,6 @@ public class CtrlChoose implements Initializable {
             }
         }
     }
-
 
     public boolean isShipOverriding(String objectId) {
 

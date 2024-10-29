@@ -9,4 +9,5 @@ com\client\CtrlChoose.class
 com\client\UtilsWS.class
 com\client\UtilsWS$1.class
 com\client\UtilsViews.class
+com\client\Main$1.class
 com\client\PlayTimer.class

@@ -24,6 +24,8 @@ public class Main extends Application {
     public static CtrlPlay ctrlPlay;
     public static CtrlChoose ctrlChoose;
     public static CtrlGame ctrlGame;
+    public static boolean clientAReady;
+    public static boolean clientBReady;
 
     public static void main(String[] args) {
         // Iniciar app JavaFX
@@ -69,6 +71,14 @@ public class Main extends Application {
             wsClient.forceExit();
         }
         System.exit(1); // Kill all executor services
+    }
+
+    public static void setClientReady(String clientId, boolean ready) {
+        if (clientId.equals("A")) {
+            clientAReady = ready;
+        } else {
+            clientBReady = ready;
+        }
     }
 
     public static void pauseDuring(long milliseconds, Runnable action) {
@@ -136,7 +146,7 @@ public class Main extends Application {
                     UtilsViews.setViewAnimating("ViewChoose");
                     txt = "GO";
                     JSONObject message = new JSONObject();
-                    message.put("type", "startReadyCountdown");
+                    message.put("type", "readyCountdown");
                     Main.wsClient.safeSend(message.toString());
                     // }
                     // else {
@@ -157,19 +167,37 @@ public class Main extends Application {
                 ctrlChoose.setSelectableObjects(msgObj.getJSONObject("selectableObjects"));
                 break;
 
-            case "readyCountdown":
-                int readyValue = msgObj.getInt("value");
-                if (readyValue == 0) {
-                    // if (!UtilsViews.getActiveView().equals("ViewChoose")) {
-                    UtilsViews.setViewAnimating("ViewGame");
-                    System.out.println(readyValue);
-                    // }
-                    // else {
-                    // UtilsViews.setViewAnimating("ViewGame");
-                    // }
-                }
-                break;
+            case "startReadyCountdown":
+                Thread countdownThread = new Thread(new Runnable() {
+                    @Override
+                    public void run() {
+                        startCountdown();
+                    }
+                });
+                countdownThread.start();
 
+                break;
+            case "serverReady":
+                if (clientAReady && clientBReady) {
+                    UtilsViews.setViewAnimating("ViewGame");
+                }
+
+        }
+    }
+
+    public static void startCountdown() {
+        try {
+            for (int i = 30; i >= 0; i--) {
+                ctrlChoose.updateSecondsLeft(i);
+                System.out.println("Tiempo restante: " + i + " segundos");
+                Thread.sleep(1000);
+                if (i == 0) {
+                    UtilsViews.setViewAnimating("ViewGame");
+                }
+            }
+            System.out.println("jeje god");
+        } catch (InterruptedException e) {
+            System.out.println("Contador Interrumpido");
         }
     }
 
