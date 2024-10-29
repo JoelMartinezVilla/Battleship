@@ -168,12 +168,17 @@ public class Main extends Application  {
             case "serverSelectableObjects":
                 //ctrlChoose.setSelectableObjects(msgObj.getJSONObject("selectableObjects"));
                 ctrlGame.setpositionShips(msgObj.getJSONObject("selectableObjects"));
+                break;
 
-            case "confirmation":
-                //String title = msgObj.getJSONObject("data").getString("title");
-                //String messageSrString = msgObj.getJSONObject("data").getString("message");
-                //showEndGameMessage(title, messageSrString);
-                System.out.println("He perido el juego");
+            case "gameOver":
+                System.out.println("DATA: "+ msgObj.getJSONObject("data").toString());
+                String winner = msgObj.getJSONObject("data").getString("winner");
+                if (winner.equals(userId)){
+                    ctrlGame.showEndGameMessage("Has ganado", "¡Has ganado la partida!");
+                }else {
+                    ctrlGame.showEndGameMessage("Has perdido", "¡Has perdido la partida!");
+
+                }
                 System.out.println(msgObj.toString());
                 break;
         }

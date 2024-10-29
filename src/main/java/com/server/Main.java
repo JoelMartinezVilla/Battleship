@@ -132,23 +132,13 @@ public class Main extends WebSocketServer {
                     break;
 
                 // Aquí puedes añadir más tipos de mensajes que maneje el servidor
-                case "youLose":
-                    //String title = obj.getJSONObject("data").get("title");
-                    //String messageSrString = obj.getJSONObject("data").get("message");
-                    //showEndGameMessage(title, message);
-                    //System.out.println("He perido el juego");
-
-                    // Mensaje directgo a el otro jugador cin la orden de detener su juego
-                    String destination;
-                    String messageString = obj.getJSONObject("data").toString();
-
-                    if (userId.equals("A")){
-                        destination = "B";
-                    }else {
-                        destination = "A";
-                    }
-                    sendPrivateMessage(destination, messageString, null);
-                    
+                case "finishGame":
+            
+                    // Mensaje directo a el otro jugador cin la orden de detener su juego
+                    obj.put("type", "gameOver");
+                    System.out.println(obj.toString());
+                    String messageString = obj.toString();
+                    broadcastMessage(messageString, null);
             }
         }
     }
@@ -178,11 +168,17 @@ public class Main extends WebSocketServer {
                 found = true;
                 try {
                     // Donde lo recive??
-                    entry.getKey().send(message);
+                    
                     JSONObject confirmation = new JSONObject();
                     confirmation.put("type", "confirmation");
-                    confirmation.put("message", "Message sent to " + destination);
+                    confirmation.put("message", message);
+
+                    // A mi
                     senderConn.send(confirmation.toString());
+
+                    // A el oponente
+                    entry.getKey().send(confirmation.toString());
+
                 } catch (WebsocketNotConnectedException e) {
                     System.out.println("Client " + destination + " not connected.");
                     clients.remove(entry.getKey());

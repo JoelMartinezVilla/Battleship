@@ -164,12 +164,10 @@ public class CtrlGame implements Initializable {
 
                             // Verifica si todos los barcos del jugador están hundidos
                             if (isAllShipsSunk()) {
-                                // Enviar este mensaje al contrincante ****
                                 JSONObject data = new JSONObject();
-                                data.put("titile", "Has perdido");
-                                data.put("message", "¡El oponente ha ganado el juego!");
-                                Main.sendMessageToServer("youLose", data);
-                               // showEndGameMessage("Has ganado", "¡Has ganado el juego!");
+                                data.put("winner", Main.userId);
+                                Main.sendMessageToServer("finishGame", data);
+                               
                             }
                         }
                         break;
@@ -208,7 +206,7 @@ public class CtrlGame implements Initializable {
     }
 
     // Método para mostrar el mensaje de fin de juego
-    private void showEndGameMessage(String title, String message) {
+    public void showEndGameMessage(String title, String message) {
         Platform.runLater(() -> {
             Alert alert = new Alert(AlertType.INFORMATION);
             alert.setTitle(title);
@@ -216,11 +214,12 @@ public class CtrlGame implements Initializable {
             alert.setContentText(message);
 
             alert.setOnHidden(evt -> {
-                // Cierra todas las ventanas y termina la aplicación
+                // Cierra todas las ventanas y termina la aplicación 
+                // Hacer que vuelva al crlConfig ***
                 Stage stage = (Stage) canvas.getScene().getWindow();
                 stage.close();
-                Platform.exit();
-                System.exit(0);
+                //Platform.exit();
+                //System.exit(0);
             });
 
             alert.showAndWait();
