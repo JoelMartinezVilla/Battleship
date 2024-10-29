@@ -165,7 +165,11 @@ public class CtrlGame implements Initializable {
                             // Verifica si todos los barcos del jugador están hundidos
                             if (isAllShipsSunk()) {
                                 // Enviar este mensaje al contrincante ****
-                                showEndGameMessage("Has perdido", "¡El oponente ha ganado el juego!");
+                                JSONObject data = new JSONObject();
+                                data.put("titile", "Has perdido");
+                                data.put("message", "¡El oponente ha ganado el juego!");
+                                Main.sendMessageToServer("youLose", data);
+                               // showEndGameMessage("Has ganado", "¡Has ganado el juego!");
                             }
                         }
                         break;

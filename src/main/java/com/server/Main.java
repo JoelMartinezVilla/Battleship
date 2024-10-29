@@ -132,6 +132,23 @@ public class Main extends WebSocketServer {
                     break;
 
                 // Aquí puedes añadir más tipos de mensajes que maneje el servidor
+                case "youLose":
+                    //String title = obj.getJSONObject("data").get("title");
+                    //String messageSrString = obj.getJSONObject("data").get("message");
+                    //showEndGameMessage(title, message);
+                    //System.out.println("He perido el juego");
+
+                    // Mensaje directgo a el otro jugador cin la orden de detener su juego
+                    String destination;
+                    String messageString = obj.getJSONObject("data").toString();
+
+                    if (userId.equals("A")){
+                        destination = "B";
+                    }else {
+                        destination = "A";
+                    }
+                    sendPrivateMessage(destination, messageString, null);
+                    
             }
         }
     }
@@ -160,6 +177,7 @@ public class Main extends WebSocketServer {
             if (entry.getValue().equals(destination)) {
                 found = true;
                 try {
+                    // Donde lo recive??
                     entry.getKey().send(message);
                     JSONObject confirmation = new JSONObject();
                     confirmation.put("type", "confirmation");

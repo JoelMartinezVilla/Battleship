@@ -169,6 +169,12 @@ public class Main extends Application  {
                 //ctrlChoose.setSelectableObjects(msgObj.getJSONObject("selectableObjects"));
                 ctrlGame.setpositionShips(msgObj.getJSONObject("selectableObjects"));
 
+            case "confirmation":
+                //String title = msgObj.getJSONObject("data").getString("title");
+                //String messageSrString = msgObj.getJSONObject("data").getString("message");
+                //showEndGameMessage(title, messageSrString);
+                System.out.println("He perido el juego");
+                System.out.println(msgObj.toString());
                 break;
         }
     }
