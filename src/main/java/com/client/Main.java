@@ -149,7 +149,8 @@ public class Main extends Application  {
                     //if (!UtilsViews.getActiveView().equals("ViewChoose")) {
                         //UtilsViews.setViewAnimating("ViewChoose");
                         UtilsViews.setViewAnimating("ViewGame");
-                        ctrlGame.setTextTorn(userId);
+                        ctrlGame.setTextTorn("A");
+                        ctrlGame.setStringUser(userId);
                         txt = "GO";
                    // }
                     //else {

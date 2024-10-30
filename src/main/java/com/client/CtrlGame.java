@@ -22,6 +22,7 @@ import javafx.scene.canvas.GraphicsContext;
 import javafx.scene.control.Button;
 import javafx.scene.input.MouseEvent;
 import javafx.scene.paint.Color;
+import javafx.scene.layout.AnchorPane;
 
 
 public class CtrlGame implements Initializable {
@@ -32,9 +33,12 @@ public class CtrlGame implements Initializable {
     @FXML
     private Text textTorn;
     @FXML
-    private Text textUser;
+    private Text stringUser;
     @FXML
     private Text counter;
+
+    @FXML
+    private AnchorPane anchor;
 
    // public static String stringTorn;
     private GraphicsContext gc;
@@ -78,6 +82,7 @@ public class CtrlGame implements Initializable {
 
         animationTimer = new PlayTimer(this::run, this::draw, 0);
        
+        
         // if (torn.equals("A")){
         //     //textTorn = new Text("Es tu tuno de atacar");
         //    //textTorn.setText("Es tu tuno de atacar");
@@ -87,9 +92,9 @@ public class CtrlGame implements Initializable {
         //     //textTorn.setText("Es el tuno de tu oponente");
         //     setTextTorn("Es el tuno de tu oponente");
         // }
-
+        setStringUser(Main.userId);
         setTextTorn(Main.userId);
-        setTextUser(Main.userId);
+        
 
         start();
     }
@@ -115,15 +120,30 @@ public class CtrlGame implements Initializable {
     public void setTextTorn(String newText){
        
         Platform.runLater(() -> {
+            // if (flag){
+            //     stringUser.setText(Main.userId);
+            // }
             textTorn.setText(newText);
         });
     }
 
-    public void setTextUser(String newText){
+    public void setStringUser(String text){
        
         Platform.runLater(() -> {
-            textUser.setText(newText);
+            Text stringUser = new Text();
+            
+            // Configurar propiedades del texto
+            stringUser.setText(text);
+            stringUser.setFill(Color.WHITE); // Color del texto
+            stringUser.setLayoutX(26.0); // Posición X
+            stringUser.setLayoutY(466.0); // Posición Y
+            stringUser.setStrokeWidth(0.0); // Grosor del trazo
+            stringUser.setStyle("-fx-font-weight: 900;");
+
+            // Añadir el texto al AnchorPane
+            anchor.getChildren().add(stringUser);
         });
+
     }
 
     private void setOnMouseMoved(MouseEvent event) {
