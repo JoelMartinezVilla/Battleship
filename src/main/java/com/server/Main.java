@@ -139,6 +139,14 @@ public class Main extends WebSocketServer {
                     System.out.println(obj.toString());
                     String messageString = obj.toString();
                     broadcastMessage(messageString, null);
+                    break;
+
+                case "changeTorn":
+                    obj.put("type", "changeTorn");
+                    //System.out.println(obj.toString());
+                    messageString = obj.toString();
+                    broadcastMessage(messageString, null);
+                break;
             }
         }
     }

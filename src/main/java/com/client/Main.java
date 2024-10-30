@@ -149,6 +149,7 @@ public class Main extends Application  {
                     //if (!UtilsViews.getActiveView().equals("ViewChoose")) {
                         //UtilsViews.setViewAnimating("ViewChoose");
                         UtilsViews.setViewAnimating("ViewGame");
+                        ctrlGame.setTextTorn(userId);
                         txt = "GO";
                    // }
                     //else {
@@ -181,6 +182,24 @@ public class Main extends Application  {
                 }
                 System.out.println(msgObj.toString());
                 break;
+
+            case "changeTorn":
+                if( CtrlGame.torn.equals("A")){
+                    CtrlGame.torn = "B";
+                    ctrlGame.setTextTorn("A");
+                }else {
+                    CtrlGame.torn = "A";
+                    ctrlGame.setTextTorn("B");
+                }
+
+                // if (CtrlGame.torn.equals(userId)){
+                //     ctrlGame.setTextTorn("Es tu tuno de atacar");
+                // }else {
+                //     ctrlGame.setTextTorn("Es el tuno de tu oponente");
+                // }
+                
+
+            break;
         }
     }
 
