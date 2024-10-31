@@ -101,12 +101,18 @@ public class Main extends WebSocketServer {
     @Override
     public void onMessage(WebSocket conn, String message) {
         JSONObject obj = new JSONObject(message);
-        String userId = clients.get(conn); // Obtiene el userId asociado a la conexión
-        JSONObject msg;
+        String userId = clients.get(conn);
         if (obj.has("type")) {
             String type = obj.getString("type");
 
             switch (type) {
+                case "clientReady":
+                    JSONObject msg = new JSONObject();
+                    System.out.println("hola");
+                    msg.put("type", "playerReady");
+                    msg.put("user", userId);
+                    broadcastMessage(msg.toString(), null);
+                    break;
                 case "clientMouseMoving":
                     // Guarda la posición del mouse para el usuario que envió el mensaje
                     clientMousePositions.put(userId, obj.getJSONObject("data"));
@@ -131,16 +137,7 @@ public class Main extends WebSocketServer {
 
                     sendServerSelectableObjects();
                     break;
-
-                case "clientReady":
-                    msg = new JSONObject();
-                    System.out.println("hola");
-                    msg.put("type", "serverReady");
-                    msg.put("clientId", userId);
-                    broadcastMessage(message.toString(), null);
-                    break;
-
-                // Aquí puedes añadir más tipos de mensajes que maneje el servidor
+                
             }
         }
     }

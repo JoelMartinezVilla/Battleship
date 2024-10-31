@@ -66,6 +66,11 @@ public class CtrlChoose implements Initializable {
         start();
     }
 
+
+    public void playersReady(){
+        UtilsViews.setViewAnimating("ViewGame");
+    }
+
     public void startSecondsLeft() {
         Thread countdownThread = new Thread(() -> {
             int timeRemaining = 30;
@@ -101,14 +106,14 @@ public class CtrlChoose implements Initializable {
 
     private void onStartButtonClick() {
         // Acciones a realizar cuando se hace clic en el botón Start
-        System.out.println("El botón Start ha sido presionado.");
         String client = Main.userId;
 
         JSONObject clientInfo = new JSONObject();
+        clientInfo.put("type", "clientReady");
         clientInfo.put("clientId", client);
 
         Main.sendMessageToServer("clientReady", clientInfo);
-
+        System.out.println("El botón Start ha sido presionado.");
     }
 
     public void onSizeChanged() {

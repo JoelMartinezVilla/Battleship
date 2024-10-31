@@ -24,8 +24,8 @@ public class Main extends Application {
     public static CtrlPlay ctrlPlay;
     public static CtrlChoose ctrlChoose;
     public static CtrlGame ctrlGame;
-    public static boolean clientAReady;
-    public static boolean clientBReady;
+    public static boolean clientAReady = false;
+    public static boolean clientBReady = false;
 
     public static void main(String[] args) {
         // Iniciar app JavaFX
@@ -164,12 +164,13 @@ public class Main extends Application {
             case "serverSelectableObjects":
                 ctrlChoose.setSelectableObjects(msgObj.getJSONObject("selectableObjects"));
                 break;
-            case "serverReady":
+            case "playerReady":
                 System.out.println("Hola");
-                setClientReady(msgObj.getString("clientId"));
-                if (clientAReady && clientBReady) {
-                    UtilsViews.setViewAnimating("ViewGame");
+                setClientReady(msgObj.getString("user"));
+                if (clientAReady == true && clientBReady == true) {
+                    ctrlChoose.playersReady();
                 }
+                break;
 
         }
     }
