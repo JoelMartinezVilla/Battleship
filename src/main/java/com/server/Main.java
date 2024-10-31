@@ -132,15 +132,11 @@ public class Main extends WebSocketServer {
                     sendServerSelectableObjects();
                     break;
 
-                case "readyCountdown":
-                    msg = new JSONObject();
-                    msg.put("type", "startReadyCountdown");
-                    broadcastMessage(message.toString(), null);
-                    break;
-
                 case "clientReady":
                     msg = new JSONObject();
+                    System.out.println("hola");
                     msg.put("type", "serverReady");
+                    msg.put("clientId", userId);
                     broadcastMessage(message.toString(), null);
                     break;
 

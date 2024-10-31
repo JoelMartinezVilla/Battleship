@@ -73,11 +73,11 @@ public class Main extends Application {
         System.exit(1); // Kill all executor services
     }
 
-    public static void setClientReady(String clientId, boolean ready) {
+    public static void setClientReady(String clientId) {
         if (clientId.equals("A")) {
-            clientAReady = ready;
+            clientAReady = true;
         } else {
-            clientBReady = ready;
+            clientBReady = true;
         }
     }
 
@@ -145,9 +145,7 @@ public class Main extends Application {
                     // if (!UtilsViews.getActiveView().equals("ViewChoose")) {
                     UtilsViews.setViewAnimating("ViewChoose");
                     txt = "GO";
-                    JSONObject message = new JSONObject();
-                    message.put("type", "readyCountdown");
-                    Main.wsClient.safeSend(message.toString());
+                    ctrlChoose.startSecondsLeft();
                     // }
                     // else {
                     // UtilsViews.setViewAnimating("ViewGame");
@@ -166,38 +164,13 @@ public class Main extends Application {
             case "serverSelectableObjects":
                 ctrlChoose.setSelectableObjects(msgObj.getJSONObject("selectableObjects"));
                 break;
-
-            case "startReadyCountdown":
-                Thread countdownThread = new Thread(new Runnable() {
-                    @Override
-                    public void run() {
-                        startCountdown();
-                    }
-                });
-                countdownThread.start();
-
-                break;
             case "serverReady":
+                System.out.println("Hola");
+                setClientReady(msgObj.getString("clientId"));
                 if (clientAReady && clientBReady) {
                     UtilsViews.setViewAnimating("ViewGame");
                 }
 
-        }
-    }
-
-    public static void startCountdown() {
-        try {
-            for (int i = 30; i >= 0; i--) {
-                ctrlChoose.updateSecondsLeft(i);
-                System.out.println("Tiempo restante: " + i + " segundos");
-                Thread.sleep(1000);
-                if (i == 0) {
-                    UtilsViews.setViewAnimating("ViewGame");
-                }
-            }
-            System.out.println("jeje god");
-        } catch (InterruptedException e) {
-            System.out.println("Contador Interrumpido");
         }
     }
 

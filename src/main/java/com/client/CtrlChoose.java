@@ -7,6 +7,7 @@ import java.util.ResourceBundle;
 
 import org.json.JSONObject;
 
+import javafx.application.Platform;
 import javafx.fxml.FXML;
 import javafx.fxml.Initializable;
 import javafx.scene.canvas.Canvas;
@@ -65,21 +66,48 @@ public class CtrlChoose implements Initializable {
         start();
     }
 
-    public void updateSecondsLeft(int time) {
-        secondsLeft.setText(Integer.toString(time));
+    public void startSecondsLeft() {
+        Thread countdownThread = new Thread(() -> {
+            int timeRemaining = 30;
+            while (timeRemaining >= 0) {
+                final int displayTime = timeRemaining;
+
+                // Actualizar el Label en el hilo de la interfaz usando Platform.runLater
+                Platform.runLater(() -> secondsLeft.setText(String.valueOf(displayTime)));
+
+
+                // Esperar 1 segundo
+                try {
+                    Thread.sleep(1000);  // Espera 1000 ms (1 segundo)
+                } catch (InterruptedException e) {
+                    e.printStackTrace();
+                    break;  // Salir del bucle si el hilo es interrumpido
+                }
+
+                // Disminuir el contador
+                timeRemaining--;
+            }
+
+            Platform.runLater(() -> {
+                UtilsViews.setViewAnimating("ViewGame");
+            });
+            
+        });
+
+        // Configurar el hilo para que se cierre al salir de la aplicación
+        countdownThread.setDaemon(true);
+        countdownThread.start();  // Iniciar el hilo de conteo regresivo
     }
 
     private void onStartButtonClick() {
         // Acciones a realizar cuando se hace clic en el botón Start
         System.out.println("El botón Start ha sido presionado.");
         String client = Main.userId;
-        Main.setClientReady(client, true);
 
         JSONObject clientInfo = new JSONObject();
-
-        clientInfo.put("type", "clientReady");
         clientInfo.put("clientId", client);
-        Main.wsClient.safeSend(clientInfo.toString());
+
+        Main.sendMessageToServer("clientReady", clientInfo);
 
     }
 
