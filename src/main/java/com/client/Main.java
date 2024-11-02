@@ -65,10 +65,10 @@ public class Main extends Application {
         stage.show();
 
         // Add icon only if not Mac
-        if (!System.getProperty("os.name").contains("Mac")) {
-            Image icon = new Image(getClass().getResourceAsStream("/assets/icon.png"));
-            stage.getIcons().add(icon);
-        }
+        // if (!System.getProperty("os.name").contains("Mac")) {
+        //     Image icon = new Image(getClass().getResourceAsStream("/assets/icon.png"));
+        //     stage.getIcons().add(icon);
+        // }
     }
 
     @Override
@@ -111,7 +111,7 @@ public class Main extends Application {
     }
 
     public static void connectToServer() {
-        ctrlConfig.txtMessage.setTextFill(Color.BLACK);
+        //ctrlConfig.txtMessage.setTextFill(Color.BLACK);
         ctrlConfig.txtMessage.setText("Connecting ...");
 
         pauseDuring(1500, () -> { // Give time to show connecting message ...

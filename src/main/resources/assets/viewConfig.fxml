@@ -63,7 +63,7 @@
                         <Insets right="8.0" />
                      </padding>
                   </Label>
-                  <TextField fx:id="txtPort" text="3000" VBox.vgrow="NEVER" />
+                  <TextField fx:id="txtPort" text="3000" VBox.vgrow="NEVER"/>
                </children>
             </HBox>
 
