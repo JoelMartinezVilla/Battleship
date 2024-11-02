@@ -170,13 +170,18 @@ public class Main extends Application {
                 }
                 break;
             case "serverSelectableObjects":
-                ctrlChoose.setSelectableObjects(msgObj.getJSONObject("selectableObjects"));
+                
+                    ctrlChoose.setSelectableObjects(msgObj.getJSONObject("selectableObjects"));
+                    System.out.println("Se han setteado los objetos al viewGame");
+                    ctrlGame.setpositionShips(msgObj.getJSONObject("selectableObjects"));
+                
                 break;
             case "playerReady":
-                System.out.println("Hola");
+                //System.out.println("Hola");
                 setClientReady(msgObj.getString("user"));
                 if (clientAReady == true && clientBReady == true) {
                     ctrlChoose.playersReady();
+                    
                 }
                 break;
 

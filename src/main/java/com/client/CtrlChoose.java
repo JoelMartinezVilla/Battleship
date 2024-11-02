@@ -16,6 +16,8 @@ import javafx.scene.control.Button;
 import javafx.scene.control.Label;
 import javafx.scene.input.MouseEvent;
 import javafx.scene.paint.Color;
+import java.util.Random;
+
 
 public class CtrlChoose implements Initializable {
 
@@ -44,6 +46,9 @@ public class CtrlChoose implements Initializable {
     public static Map<String, Map<String, JSONObject>> selectableObjects = new HashMap<>();
     private String selectedObject = "";
 
+    private String userToRndomPos = Main.userId;
+
+
     @Override
     public void initialize(URL url, ResourceBundle rb) {
         this.gc = canvas.getGraphicsContext2D();
@@ -69,9 +74,88 @@ public class CtrlChoose implements Initializable {
         start();
     }
 
-    public void playersReady() {
-        UtilsViews.setViewAnimating("ViewGame");
+    public void setUserToRandomPos(String userToRandom){
+        this.userToRndomPos = userToRandom;
     }
+
+    public String getUserToRandomPos(){
+        return this.userToRndomPos;
+    }
+
+    public void playersReady() {
+        //Main.sendMessageToServer("clientSelectableObjectMoving", null);
+        System.out.println("Antes del ultimo ready");
+        UtilsViews.setViewAnimating("ViewGame");
+
+    }
+
+
+    public void setRandomShipPos() {
+        System.out.println("Estoy en el random");
+        String userToRandom = this.getUserToRandomPos();
+        System.out.println(userToRandom);
+        Map<String, JSONObject> userObjects = selectableObjects.get(userToRandom);
+        double cellSize = grid.getCellSize();
+        
+        int startX = (int) grid.getStartX();
+        int startY = (int) grid.getStartY();
+        int finalX = (int) (startX + cellSize * grid.getRows());
+        int finalY = (int) (startY + cellSize * grid.getCols());
+        
+        Map<String, JSONObject> ships = new HashMap<>();
+        
+        Random random = new Random();
+    
+        for (int i = 0; i < 3; i++) {
+            // Generar dimensiones aleatorias entre 1 y 5 casillas
+            int length = random.nextInt(5) + 1; // Tamaño aleatorio entre 1 y 5 casillas
+            boolean isHorizontal = random.nextBoolean(); // Orientación aleatoria
+            int rows = isHorizontal ? 1 : length;
+            int cols = isHorizontal ? length : 1;
+    
+            // Generar posiciones aleatorias, ajustando si el barco se sale del grid
+            int maxRow = (int) grid.getRows() - rows;
+            int maxCol = (int) grid.getCols() - cols;
+            int randomRow = random.nextInt(maxRow + 1);
+            int randomCol = random.nextInt(maxCol + 1);
+    
+            double x = grid.getCellX(randomCol);
+            double y = grid.getCellY(randomRow);
+    
+            // Crear y configurar el barco
+            String id = "O" + i;
+            JSONObject obj0 = new JSONObject();
+            obj0.put("objectId", id);
+            obj0.put("x", x);
+            obj0.put("y", y);
+            obj0.put("initial_x", 300); // Ajusta según sea necesario
+            obj0.put("initial_y", 50); // Ajusta según sea necesario
+            obj0.put("cols", cols);
+            obj0.put("col", randomCol);
+            obj0.put("row", randomRow);
+            obj0.put("rows", rows);
+            obj0.put("placed", true);
+    
+            // Guardar el barco en el mapa de barcos
+            ships.put(id, obj0);
+            Main.sendMessageToServer("clientSelectableObjectMoving", obj0);
+        }
+        
+        // Actualizar objetos seleccionables con las posiciones aleatorias generadas
+        selectableObjects.put(userToRandom, ships);
+        
+        // Revisión de conflictos de posición
+        for (JSONObject object : selectableObjects.get(userToRandom).values()) {
+            String objectId = (String) object.get("objectId");
+            if (isShipOverriding(objectId)) {
+                setRandomShipPos();
+                break;
+            }
+        }
+    }
+    
+    
+
 
     public void updateReadyLabel(boolean ready) {
         if (ready) {
@@ -111,9 +195,19 @@ public class CtrlChoose implements Initializable {
                 // Disminuir el contador
                 timeRemaining--;
             }
-
+            
             Platform.runLater(() -> {
-                UtilsViews.setViewAnimating("ViewGame");
+                if(!allShipsPlaced()){
+                    setRandomShipPos();
+                }
+                // Setea todos los carteles y objetos en el servidor
+                if ("Not Ready".equals(readyLabel.getText())) {
+                    onStartButtonClick();
+                    System.out.println("Antes del viewGame");
+                }
+                
+
+                //UtilsViews.setViewAnimating("ViewGame");
             });
 
         });
@@ -132,6 +226,9 @@ public class CtrlChoose implements Initializable {
             JSONObject clientInfo = new JSONObject();
             clientInfo.put("type", "clientReady");
             clientInfo.put("clientId", client);
+            System.out.println("Dentro del onStartButton()");
+            System.out.println(selectableObjects);
+            //clientInfo.put("objects", selectableObjects);
 
             Main.sendMessageToServer("clientReady", clientInfo);
             System.out.println("Todos los barcos puestos.");
@@ -148,6 +245,7 @@ public class CtrlChoose implements Initializable {
         for (String objectId : userObjects.keySet()) {
             JSONObject obj = userObjects.get(objectId);
             if (!obj.getBoolean("placed")) {
+                setUserToRandomPos(Main.userId);
                 return false;
             }
         }
@@ -325,8 +423,10 @@ public class CtrlChoose implements Initializable {
     public void setPlayersMousePositions(JSONObject positions) {
         clientMousePositions.clear();
         for (String clientId : positions.keySet()) {
-            JSONObject positionObject = positions.getJSONObject(clientId);
-            clientMousePositions.put(clientId, positionObject);
+            if (clientId.equals(Main.userId)){
+                JSONObject positionObject = positions.getJSONObject(clientId);
+                clientMousePositions.put(clientId, positionObject);
+            }
         }
     }
 

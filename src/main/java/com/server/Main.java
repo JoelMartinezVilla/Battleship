@@ -110,11 +110,16 @@ public class Main extends WebSocketServer {
 
             switch (type) {
                 case "clientReady":
+                    
+                  //  Map<String, Map<String, JSONObject>> objects = (Map<String, Map<String, JSONObject>>) obj.get("objects");
+
+                    sendServerSelectableObjects();
                     JSONObject msg = new JSONObject();
                     System.out.println("hola");
                     msg.put("type", "playerReady");
                     msg.put("user", userId);
                     broadcastMessage(msg.toString(), null);
+                    
                     break;
                 case "clientMouseMoving":
                     // Guarda la posición del mouse para el usuario que envió el mensaje
@@ -255,6 +260,10 @@ public class Main extends WebSocketServer {
     }
 
     public void sendServerSelectableObjects() {
+        // Map<String, Map<String, JSONObject>> objects
+        // if (objects == null){
+        //     objects = selectableObjects;
+        // }
         // Prepara el mensaje de tipo 'serverObjects' con las posiciones de todos los
         // clientes
         JSONObject rst1 = new JSONObject();
