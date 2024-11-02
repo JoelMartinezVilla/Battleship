@@ -8,13 +8,13 @@
 <?import javafx.scene.layout.VBox?>
 <?import javafx.scene.text.Font?>
 
-<AnchorPane fx:id="anchor" minHeight="500.0" minWidth="600.0" xmlns="http://javafx.com/javafx/22" xmlns:fx="http://javafx.com/fxml/1" fx:controller="com.client.CtrlWait">
+<AnchorPane fx:id="anchor" minHeight="500.0" minWidth="600.0" style="-fx-background-color: #1e1e1e;" xmlns="http://javafx.com/javafx/22" xmlns:fx="http://javafx.com/fxml/1" fx:controller="com.client.CtrlWait">
    <children>
-      <VBox alignment="CENTER" prefHeight="200.0" prefWidth="100.0" AnchorPane.bottomAnchor="0.0" AnchorPane.leftAnchor="0.0" AnchorPane.rightAnchor="0.0" AnchorPane.topAnchor="0.0">
+      <VBox alignment="CENTER" prefHeight="200.0" prefWidth="100.0" spacing="15.0" AnchorPane.bottomAnchor="0.0" AnchorPane.leftAnchor="0.0" AnchorPane.rightAnchor="0.0" AnchorPane.topAnchor="0.0">
          <children>
-            <Label fx:id="txtTitle" alignment="CENTER" prefHeight="17.0" prefWidth="600.0" text="Waiting for players ..." VBox.vgrow="NEVER">
+            <Label fx:id="txtTitle" alignment="CENTER" prefHeight="17.0" prefWidth="600.0" text="Waiting for players ..." textFill="WHITE" VBox.vgrow="NEVER">
                <font>
-                  <Font size="36.0" />
+                  <Font name="Arial Bold" size="36.0" />
                </font>
                <VBox.margin>
                   <Insets top="100.0" />
@@ -25,7 +25,7 @@
                <children>
                   <VBox alignment="CENTER" prefHeight="200.0" prefWidth="100.0" HBox.hgrow="ALWAYS">
                      <children>
-                        <Label fx:id="txtPlayer0" text="?">
+                        <Label fx:id="txtPlayer0" text="?" textFill="WHITE">
                            <font>
                               <Font size="64.0" />
                            </font>
@@ -37,7 +37,7 @@
                   </VBox>
                   <VBox alignment="CENTER" prefHeight="200.0" prefWidth="100.0" HBox.hgrow="ALWAYS">
                      <children>
-                        <Label fx:id="txtPlayer1" text="?">
+                        <Label fx:id="txtPlayer1" text="?" textFill="WHITE">
                            <font>
                               <Font size="64.0" />
                            </font>
