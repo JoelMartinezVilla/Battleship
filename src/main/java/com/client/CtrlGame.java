@@ -63,8 +63,9 @@ public class CtrlGame implements Initializable {
 
     public static String torn = "A";
 
+    private String opposite;
 
-
+    
 
     @Override
     public void initialize(URL url, ResourceBundle rb) {
@@ -92,13 +93,21 @@ public class CtrlGame implements Initializable {
         //     //textTorn.setText("Es el tuno de tu oponente");
         //     setTextTorn("Es el tuno de tu oponente");
         // }
-        setStringUser(Main.userId);
-        setTextTorn(Main.userId);
+       
+        // setOpposite(Main.userId.equals("A")? "B" : "A");
+        // setStringUser(Main.userId);
+        // setTextTorn(Main.userId);
         
 
         start();
     }
 
+    public void initializeGame() {
+        setOpposite(Main.userId.equals("A") ? "B" : "A");
+        setStringUser(Main.userId);
+        setTextTorn("A");
+    }
+    
 
     public void onSizeChanged() {
         double width = UtilsViews.parentContainer.getWidth();
@@ -146,6 +155,15 @@ public class CtrlGame implements Initializable {
 
     }
 
+    public void setOpposite(String opp){
+        Platform.runLater(() -> {
+            System.out.println("REFERENCIAAAAA");
+            System.out.println(Main.userId + " cacao");
+            opposite = opp;
+            
+        });
+    }
+
     private void setOnMouseMoved(MouseEvent event) {
         double mouseX = event.getX();
         double mouseY = event.getY();
@@ -167,11 +185,8 @@ public class CtrlGame implements Initializable {
         Main.sendMessageToServer("clientMouseMoving", newPosition);
     }
 
-     //// ***********
-
-
-
-
+   
+      
     // Solo funciona si es tu turno
     private void onMousePressed(MouseEvent event) {
         // if is yourTurn
@@ -189,7 +204,9 @@ public class CtrlGame implements Initializable {
             int touchedRow = (int) ((mouseY - startY) / cellSize);
 
             if (touchedCol >= 0 && touchedCol < grid.getCols() && touchedRow >= 0 && touchedRow < grid.getRows()) {
-                Map<String, JSONObject> userObjects = positionShips.get(Main.userId);
+                System.out.println("OPPOSITE: " + opposite);
+
+                Map<String, JSONObject> userObjects = positionShips.get(opposite);
                 boolean isWater = true;
 
                 if (userObjects != null) {
@@ -255,7 +272,6 @@ public class CtrlGame implements Initializable {
             }
         }
     }
-    
 
     // Método para comprobar si un barco está hundido
     private boolean isShipSunk(JSONObject ship) {
@@ -268,7 +284,7 @@ public class CtrlGame implements Initializable {
 
     // Método para verificar si todos los barcos están hundidos
     private boolean isAllShipsSunk() {
-        Map<String, JSONObject> userObjects = positionShips.get(Main.userId);
+        Map<String, JSONObject> userObjects = positionShips.get(opposite);
         for (JSONObject obj : userObjects.values()) {
             if (!obj.optBoolean("sunk", false)) {
                 return false; // Si algún barco no está hundido, el jugador aún no ha perdido
@@ -349,6 +365,7 @@ public class CtrlGame implements Initializable {
 
 
     public void draw() {
+       
         gc.clearRect(0, 0, canvas.getWidth(), canvas.getHeight());
 
 
@@ -371,7 +388,7 @@ public class CtrlGame implements Initializable {
 
 
        // Solo pintarlos si hay barco tocado
-        Map<String, JSONObject> userObjects = positionShips.get(Main.userId);
+        Map<String, JSONObject> userObjects = positionShips.get(opposite);
         if (userObjects != null) {
             for (String objectId : userObjects.keySet()) {
                 JSONObject obj = userObjects.get(objectId);

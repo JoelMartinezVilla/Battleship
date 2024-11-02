@@ -48,7 +48,7 @@ public class Main extends WebSocketServer {
         Map<String, JSONObject> ships = new HashMap<>();
         JSONObject obj0 = new JSONObject();
         obj0.put("objectId", "O0");
-        obj0.put("x", 50);
+        obj0.put("x", 300);
         obj0.put("y", 50);
         obj0.put("initial_x", 300);
         obj0.put("initial_y", 50);
@@ -74,9 +74,9 @@ public class Main extends WebSocketServer {
 
         JSONObject obj2 = new JSONObject();
         obj2.put("objectId", "O2");
-        obj2.put("x", 310);
+        obj2.put("x", 350);
         obj2.put("y", 150);
-        obj2.put("initial_x", 310);
+        obj2.put("initial_x", 350);
         obj2.put("initial_y", 150);
         obj2.put("cols", 2);
         obj2.put("rows", 1);
@@ -167,7 +167,7 @@ public class Main extends WebSocketServer {
                     //System.out.println(obj.toString());
                     messageString = obj.toString();
                     broadcastMessage(messageString, null);
-                break;
+                    break;
             }
         }
     }

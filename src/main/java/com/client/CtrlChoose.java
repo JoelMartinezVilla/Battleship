@@ -498,6 +498,8 @@ public class CtrlChoose implements Initializable {
                 double cellSize = grid.getCellSize();
                 double x = grid.getStartX() + col * cellSize;
                 double y = grid.getStartY() + row * cellSize;
+                gc.setFill(Color.GREY);
+                gc.fillRect(x, y, cellSize, cellSize);
                 gc.strokeRect(x, y, cellSize, cellSize);
             }
         }
@@ -526,16 +528,15 @@ public class CtrlChoose implements Initializable {
                 color = Color.YELLOW;
                 break;
             default:
-                color = Color.GRAY;
+                color = Color.WHITE;
                 break;
         }
         // Dibuixar el rectangle
         gc.setFill(color);
         gc.fillRect(x, y, width, height);
-        gc.setStroke(Color.BLACK);
+        gc.setStroke(color);
         gc.strokeRect(x, y, width, height);
 
-        gc.setFill(Color.BLACK);
-        gc.fillText(objectId, x + 5, y + 15);
+       
     }
 }

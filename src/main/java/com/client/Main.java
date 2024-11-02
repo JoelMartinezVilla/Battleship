@@ -59,14 +59,14 @@ public class Main extends Application {
         Scene scene = new Scene(UtilsViews.parentContainer);
         stage.setScene(scene);
         stage.onCloseRequestProperty(); // Call close method when closing window
-        stage.setTitle("JavaFX");
+        stage.setTitle("BattleShip");
         stage.setMinWidth(windowWidth);
         stage.setMinHeight(windowHeight);
         stage.show();
 
         // Add icon only if not Mac
         if (!System.getProperty("os.name").contains("Mac")) {
-            Image icon = new Image("file:/icons/icon.png");
+            Image icon = new Image(getClass().getResourceAsStream("/assets/icon.png"));
             stage.getIcons().add(icon);
         }
     }
@@ -162,8 +162,8 @@ public class Main extends Application {
                     txt = "GO";
                     ctrlChoose.startSecondsLeft();
                    // ***
-                    ctrlGame.setTextTorn("A");
-                    ctrlGame.setStringUser(userId);
+                    // ctrlGame.setTextTorn("A");
+                    // ctrlGame.setStringUser(userId);
                        
                   
                 }
@@ -188,6 +188,7 @@ public class Main extends Application {
                 //System.out.println("Hola");
                 setClientReady(msgObj.getString("user"));
                 if (clientAReady == true && clientBReady == true) {
+                    ctrlGame.initializeGame();
                     ctrlChoose.playersReady();
                     
                 }
@@ -205,12 +206,13 @@ public class Main extends Application {
                 break;
 
             case "changeTorn":
+                System.out.println("Estoy en el cambio de turno");
                 if( CtrlGame.torn.equals("A")){
                     CtrlGame.torn = "B";
-                    ctrlGame.setTextTorn("A");
+                    ctrlGame.setTextTorn("B");
                 }else {
                     CtrlGame.torn = "A";
-                    ctrlGame.setTextTorn("B");
+                    ctrlGame.setTextTorn("A");
                 }
 
                 // if (CtrlGame.torn.equals(userId)){
