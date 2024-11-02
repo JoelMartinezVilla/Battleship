@@ -44,11 +44,17 @@ public class Main extends Application {
         UtilsViews.addView(getClass(), "ViewPlay", "/assets/viewPlay.fxml");
         UtilsViews.addView(getClass(), "ViewGame", "/assets/viewGame.fxml");
 
+
+
+
         ctrlConfig = (CtrlConfig) UtilsViews.getController("ViewConfig");
         ctrlWait = (CtrlWait) UtilsViews.getController("ViewWait");
         ctrlChoose = (CtrlChoose) UtilsViews.getController("ViewChoose");
         ctrlPlay = (CtrlPlay) UtilsViews.getController("ViewPlay");
         ctrlGame = (CtrlGame) UtilsViews.getController("ViewGame");
+
+
+
 
         Scene scene = new Scene(UtilsViews.parentContainer);
         stage.setScene(scene);
@@ -128,6 +134,7 @@ public class Main extends Application {
     }
 
     private static void wsMessage(String response) {
+       // System.out.println(response);
         JSONObject msgObj = new JSONObject(response);
         switch (msgObj.getString("type")) {
             case "clients":
@@ -154,10 +161,11 @@ public class Main extends Application {
                     UtilsViews.setViewAnimating("ViewChoose");
                     txt = "GO";
                     ctrlChoose.startSecondsLeft();
-                    // }
-                    // else {
-                    // UtilsViews.setViewAnimating("ViewGame");
-                    // }
+                   // ***
+                    ctrlGame.setTextTorn("A");
+                    ctrlGame.setStringUser(userId);
+                       
+                  
                 }
                 ctrlWait.txtTitle.setText(txt);
                 break;
@@ -184,7 +192,34 @@ public class Main extends Application {
                     
                 }
                 break;
+            case "gameOver":
+                System.out.println("DATA: "+ msgObj.getJSONObject("data").toString());
+                String winner = msgObj.getJSONObject("data").getString("winner");
+                if (winner.equals(userId)){
+                    ctrlGame.showEndGameMessage("Has ganado", "¡Has ganado la partida!");
+                }else {
+                    ctrlGame.showEndGameMessage("Has perdido", "¡Has perdido la partida!");
 
+                }
+                System.out.println(msgObj.toString());
+                break;
+
+            case "changeTorn":
+                if( CtrlGame.torn.equals("A")){
+                    CtrlGame.torn = "B";
+                    ctrlGame.setTextTorn("A");
+                }else {
+                    CtrlGame.torn = "A";
+                    ctrlGame.setTextTorn("B");
+                }
+
+                // if (CtrlGame.torn.equals(userId)){
+                //     ctrlGame.setTextTorn("Es tu tuno de atacar");
+                // }else {
+                //     ctrlGame.setTextTorn("Es el tuno de tu oponente");
+                // }
+                
+            break;
         }
     }
 

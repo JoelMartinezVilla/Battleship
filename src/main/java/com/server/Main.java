@@ -48,13 +48,15 @@ public class Main extends WebSocketServer {
         Map<String, JSONObject> ships = new HashMap<>();
         JSONObject obj0 = new JSONObject();
         obj0.put("objectId", "O0");
-        obj0.put("x", 300);
+        obj0.put("x", 50);
         obj0.put("y", 50);
         obj0.put("initial_x", 300);
         obj0.put("initial_y", 50);
         obj0.put("cols", 4);
         obj0.put("rows", 1);
         obj0.put("placed", false);
+        obj0.put("cellsTouch", 0);
+        obj0.put("touched", false);
         ships.put("O0", obj0);
 
         JSONObject obj1 = new JSONObject();
@@ -66,6 +68,8 @@ public class Main extends WebSocketServer {
         obj1.put("cols", 1);
         obj1.put("rows", 3);
         obj1.put("placed", false);
+        obj1.put("cellsTouch", 0);
+        obj1.put("touched", false);
         ships.put("O1", obj1);
 
         JSONObject obj2 = new JSONObject();
@@ -77,6 +81,8 @@ public class Main extends WebSocketServer {
         obj2.put("cols", 2);
         obj2.put("rows", 1);
         obj2.put("placed", false);
+        obj2.put("cellsTouch", 0);
+        obj2.put("touched", false);
         ships.put("O2", obj2);
 
         // Usa el nombre del cliente como userId para almacenar sus objetos
@@ -145,7 +151,23 @@ public class Main extends WebSocketServer {
 
                     sendServerSelectableObjects();
                     break;
-                
+
+                // Aquí puedes añadir más tipos de mensajes que maneje el servidor
+                case "finishGame":
+            
+                    // Mensaje directo a el otro jugador cin la orden de detener su juego
+                    obj.put("type", "gameOver");
+                    System.out.println(obj.toString());
+                    String messageString = obj.toString();
+                    broadcastMessage(messageString, null);
+                    break;
+
+                case "changeTorn":
+                    obj.put("type", "changeTorn");
+                    //System.out.println(obj.toString());
+                    messageString = obj.toString();
+                    broadcastMessage(messageString, null);
+                break;
             }
         }
     }
@@ -174,11 +196,18 @@ public class Main extends WebSocketServer {
             if (entry.getValue().equals(destination)) {
                 found = true;
                 try {
-                    entry.getKey().send(message);
+                    // Donde lo recive??
+                    
                     JSONObject confirmation = new JSONObject();
                     confirmation.put("type", "confirmation");
-                    confirmation.put("message", "Message sent to " + destination);
+                    confirmation.put("message", message);
+
+                    // A mi
                     senderConn.send(confirmation.toString());
+
+                    // A el oponente
+                    entry.getKey().send(confirmation.toString());
+
                 } catch (WebsocketNotConnectedException e) {
                     System.out.println("Client " + destination + " not connected.");
                     clients.remove(entry.getKey());

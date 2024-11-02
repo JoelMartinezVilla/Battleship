@@ -21,8 +21,8 @@ Get-Content $configFile | ForEach-Object {
 }
 
 # Parámetros por defecto
-$DEFAULT_USER = "jmartinezvilla"
-$DEFAULT_RSA_PATH = "$HOME\.ssh\hola"
+$DEFAULT_USER = "jmartinezmarin"
+$DEFAULT_RSA_PATH = "$HOME\.ssh\id_rsa"
 $DEFAULT_SERVER_PORT = 20127
 
 # Leer argumentos o usar valores por defecto
@@ -37,8 +37,6 @@ Write-Host "Puerto del servidor: $SERVER_PORT"
 $JAR_NAME = "server-package.jar"
 $JAR_PATH = ".\target\$JAR_NAME"
 
-# Cambiar al directorio raíz del proyecto
-Set-Location .. 
 
 # Verificar si el archivo de clave privada existe
 if (-Not (Test-Path $RSA_PATH)) {
@@ -54,7 +52,7 @@ if (Test-Path $JAR_PATH) {
 
 # Ejecutar el comando para compilar el proyecto
 Write-Host "Ejecutando el comando ./run.ps1 com.server.Main build..."
-Set-Location Battleship
+
 .\run.ps1 com.server.Main build
 
 # Verificar si se generó el archivo JAR
