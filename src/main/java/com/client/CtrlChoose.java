@@ -26,7 +26,10 @@ public class CtrlChoose implements Initializable {
     private Label secondsLeft;
 
     @FXML
-    private Button startButton; // Inyectar el botón StartButton
+    private Button startButton;
+
+    @FXML
+    private Label readyLabel;
 
     private GraphicsContext gc;
     private Boolean showFPS = false;
@@ -70,6 +73,11 @@ public class CtrlChoose implements Initializable {
         UtilsViews.setViewAnimating("ViewGame");
     }
 
+    public void updateReadyLabel(){
+        readyLabel.setText("Ready");
+        readyLabel.setTextFill(Color.GREEN);
+    }
+
     public void startSecondsLeft() {
         Thread countdownThread = new Thread(() -> {
             int timeRemaining = 30;
@@ -107,6 +115,7 @@ public class CtrlChoose implements Initializable {
         String client = Main.userId;
 
         if (allShipsPlaced()) {
+            updateReadyLabel();
             JSONObject clientInfo = new JSONObject();
             clientInfo.put("type", "clientReady");
             clientInfo.put("clientId", client);
