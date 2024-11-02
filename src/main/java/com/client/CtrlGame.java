@@ -167,24 +167,31 @@ public class CtrlGame implements Initializable {
         Main.sendMessageToServer("clientMouseMoving", newPosition);
     }
 
+     //// ***********
 
+
+
+
+    // Solo funciona si es tu turno
     private void onMousePressed(MouseEvent event) {
-        // Verifica si es el turno del jugador
-        if (Main.userId.equals(torn)) {
+        // if is yourTurn
+        if (Main.userId.equals(torn)){
+
+            
             double mouseX = event.getX();
             double mouseY = event.getY();
-    
+
             double startX = grid.getStartX();
             double startY = grid.getStartY();
             double cellSize = grid.getCellSize();
-    
+
             int touchedCol = (int) ((mouseX - startX) / cellSize);
             int touchedRow = (int) ((mouseY - startY) / cellSize);
-    
+
             if (touchedCol >= 0 && touchedCol < grid.getCols() && touchedRow >= 0 && touchedRow < grid.getRows()) {
                 Map<String, JSONObject> userObjects = positionShips.get(Main.userId);
                 boolean isWater = true;
-    
+
                 if (userObjects != null) {
                     for (String objectId : userObjects.keySet()) {
                         JSONObject obj = userObjects.get(objectId);
@@ -192,60 +199,47 @@ public class CtrlGame implements Initializable {
                         int objY = obj.getInt("y");
                         int cols = obj.getInt("cols");
                         int rows = obj.getInt("rows");
-    
-                        // Verifica si la posición del clic está dentro del barco
+
                         if (isPositionInsideObject(mouseX, mouseY, objX, objY, cols, rows)) {
                             int objCol = (int) ((mouseX - objX) / cellSize);
                             int objRow = (int) ((mouseY - objY) / cellSize);
-    
-                            // Si es la primera vez que se toca una celda del barco, inicializa el array para tocadas
+
                             if (!obj.has("touchedCellsShips")) {
                                 obj.put("touchedCellsShips", new ArrayList<JSONObject>());
                             }
-    
-                            // Registra la celda tocada del barco
+
                             JSONObject touchedCell = new JSONObject();
                             touchedCell.put("col", objCol);
                             touchedCell.put("row", objRow);
                             obj.getJSONArray("touchedCellsShips").put(touchedCell);
-    
+
                             obj.put("touched", true);
                             isWater = false;
+
                             System.out.println("Celda tocada del barco " + objectId + ": (" + objCol + ", " + objRow + ")");
-    
-                            // Guarda el barco tocado en el mapa de posiciones tocadas
-                            Map<String, JSONObject> userTouches = new HashMap<>();
-                            JSONObject touch = new JSONObject();
-                            touch.put("objectId", objectId);
-                            touch.put("x", objX);
-                            touch.put("y", objY);
-                            touch.put("cols", cols);
-                            touch.put("rows", rows);
-                            userTouches.put(objectId, touch);
-                            touchedPositions.put(Main.userId, userTouches);
-    
+
                             // Comprueba si el barco está completamente hundido
                             if (isShipSunk(obj)) {
                                 obj.put("sunk", true); // Marca el barco como hundido
                                 System.out.println(Main.userId + ": ¡Barco " + objectId + " hundido!");
-    
-                                // Actualiza el contador de barcos hundidos
-                                int shipsSunked = Integer.parseInt(counter.getText()) + 1;
-                                counter.setText(String.valueOf(shipsSunked));
-    
+                                //System.out.println(counter.getText());
+                                 int shipsSunked = Integer.parseInt(counter.getText()) +1;
+                                 counter.setText(String.valueOf(shipsSunked));
+                                
+
                                 // Verifica si todos los barcos del jugador están hundidos
                                 if (isAllShipsSunk()) {
                                     JSONObject data = new JSONObject();
                                     data.put("winner", Main.userId);
                                     Main.sendMessageToServer("finishGame", data);
+                                
                                 }
                             }
                             break;
                         }
                     }
                 }
-    
-                // Si no se tocó ningún barco, marca la celda como agua
+
                 if (isWater) {
                     JSONObject touchedWaterCell = new JSONObject();
                     touchedWaterCell.put("col", touchedCol);
@@ -253,9 +247,11 @@ public class CtrlGame implements Initializable {
                     touchedCellssWater.add(touchedWaterCell);
                     System.out.println("Celda de agua tocada: (" + touchedCol + ", " + touchedRow + ")");
                 }
-    
-                // Cambia el turno
+
                 Main.sendMessageToServer("changeTorn", null);
+                //this.textTorn.setText(stringTorn);
+               
+                
             }
         }
     }
