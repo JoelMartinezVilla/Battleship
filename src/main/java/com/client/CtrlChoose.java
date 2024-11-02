@@ -66,8 +66,7 @@ public class CtrlChoose implements Initializable {
         start();
     }
 
-
-    public void playersReady(){
+    public void playersReady() {
         UtilsViews.setViewAnimating("ViewGame");
     }
 
@@ -80,13 +79,12 @@ public class CtrlChoose implements Initializable {
                 // Actualizar el Label en el hilo de la interfaz usando Platform.runLater
                 Platform.runLater(() -> secondsLeft.setText(String.valueOf(displayTime)));
 
-
                 // Esperar 1 segundo
                 try {
-                    Thread.sleep(1000);  // Espera 1000 ms (1 segundo)
+                    Thread.sleep(1000); // Espera 1000 ms (1 segundo)
                 } catch (InterruptedException e) {
                     e.printStackTrace();
-                    break;  // Salir del bucle si el hilo es interrumpido
+                    break; // Salir del bucle si el hilo es interrumpido
                 }
 
                 // Disminuir el contador
@@ -96,24 +94,42 @@ public class CtrlChoose implements Initializable {
             Platform.runLater(() -> {
                 UtilsViews.setViewAnimating("ViewGame");
             });
-            
+
         });
 
         // Configurar el hilo para que se cierre al salir de la aplicación
         countdownThread.setDaemon(true);
-        countdownThread.start();  // Iniciar el hilo de conteo regresivo
+        countdownThread.start(); // Iniciar el hilo de conteo regresivo
     }
 
     private void onStartButtonClick() {
         // Acciones a realizar cuando se hace clic en el botón Start
         String client = Main.userId;
 
-        JSONObject clientInfo = new JSONObject();
-        clientInfo.put("type", "clientReady");
-        clientInfo.put("clientId", client);
+        if (allShipsPlaced()) {
+            JSONObject clientInfo = new JSONObject();
+            clientInfo.put("type", "clientReady");
+            clientInfo.put("clientId", client);
 
-        Main.sendMessageToServer("clientReady", clientInfo);
-        System.out.println("El botón Start ha sido presionado.");
+            Main.sendMessageToServer("clientReady", clientInfo);
+            System.out.println("Todos los barcos puestos.");
+        }else{
+            System.out.println("No has puesto todos los barcos todavía.");
+        }
+
+    }
+
+    public boolean allShipsPlaced() {
+        Map<String, JSONObject> userObjects = selectableObjects.get(Main.userId);
+
+        for (String objectId : userObjects.keySet()) {
+            JSONObject obj = userObjects.get(objectId);
+            if (!obj.getBoolean("placed")) {
+                return false;
+            }
+        }
+        return true;
+
     }
 
     public void onSizeChanged() {
@@ -249,12 +265,15 @@ public class CtrlChoose implements Initializable {
                 if (isShipOverriding(selectedObject)) {
                     obj.put("x", obj.get("initial_x"));
                     obj.put("y", obj.get("initial_y"));
+                    obj.put("placed", false);
                 } else if (objCol != -1 && objRow != -1) {
                     obj.put("x", grid.getCellX(objCol));
                     obj.put("y", grid.getCellY(objRow));
+                    obj.put("placed", true);
                 } else if (objCol <= -1 || objRow <= -1) {
                     obj.put("x", obj.get("initial_x"));
                     obj.put("y", obj.get("initial_y"));
+                    obj.put("placed", false);
                 }
 
                 obj.put("objectId", obj.getString("objectId"));

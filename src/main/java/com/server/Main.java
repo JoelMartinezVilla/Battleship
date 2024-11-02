@@ -54,6 +54,7 @@ public class Main extends WebSocketServer {
         obj0.put("initial_y", 50);
         obj0.put("cols", 4);
         obj0.put("rows", 1);
+        obj0.put("placed", false);
         ships.put("O0", obj0);
 
         JSONObject obj1 = new JSONObject();
@@ -64,6 +65,7 @@ public class Main extends WebSocketServer {
         obj1.put("initial_y", 100);
         obj1.put("cols", 1);
         obj1.put("rows", 3);
+        obj1.put("placed", false);
         ships.put("O1", obj1);
 
         JSONObject obj2 = new JSONObject();
@@ -74,6 +76,7 @@ public class Main extends WebSocketServer {
         obj2.put("initial_y", 150);
         obj2.put("cols", 2);
         obj2.put("rows", 1);
+        obj2.put("placed", false);
         ships.put("O2", obj2);
 
         // Usa el nombre del cliente como userId para almacenar sus objetos
