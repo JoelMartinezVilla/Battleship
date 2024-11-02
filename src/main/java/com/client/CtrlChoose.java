@@ -73,9 +73,22 @@ public class CtrlChoose implements Initializable {
         UtilsViews.setViewAnimating("ViewGame");
     }
 
-    public void updateReadyLabel(){
-        readyLabel.setText("Ready");
-        readyLabel.setTextFill(Color.GREEN);
+    public void updateReadyLabel(boolean ready) {
+        if (ready) {
+            if (readyLabel.getText().equals("Ready")) {
+                readyLabel.setText("Not Ready");
+                readyLabel.setTextFill(Color.RED);
+            }else {
+                readyLabel.setText("Ready");
+                readyLabel.setTextFill(Color.GREEN);
+
+            }
+            
+        } else {
+            readyLabel.setText("Not Ready");
+            readyLabel.setTextFill(Color.RED);
+        }
+
     }
 
     public void startSecondsLeft() {
@@ -115,14 +128,15 @@ public class CtrlChoose implements Initializable {
         String client = Main.userId;
 
         if (allShipsPlaced()) {
-            updateReadyLabel();
+            updateReadyLabel(true);
             JSONObject clientInfo = new JSONObject();
             clientInfo.put("type", "clientReady");
             clientInfo.put("clientId", client);
 
             Main.sendMessageToServer("clientReady", clientInfo);
             System.out.println("Todos los barcos puestos.");
-        }else{
+        } else {
+            updateReadyLabel(false);
             System.out.println("No has puesto todos los barcos todavía.");
         }
 

@@ -75,9 +75,17 @@ public class Main extends Application {
 
     public static void setClientReady(String clientId) {
         if (clientId.equals("A")) {
-            clientAReady = true;
+            if(clientAReady){
+                clientAReady = false;
+            }else{
+                clientAReady = true;
+            }
         } else {
-            clientBReady = true;
+            if(clientBReady){
+                clientBReady = false;
+            }else{
+                clientBReady = true;
+            }
         }
     }
 
